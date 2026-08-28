@@ -179,6 +179,29 @@ export interface Bark {
   live?: boolean;
 }
 
+export interface CreatorReview {
+  id: string;
+  code: string;
+  type: BarkType;
+  title: string;
+  creatorId: string;
+  creatorName?: string;
+  creatorHandle?: string;
+  authorId: string;
+  authorName?: string;
+  publishedAt: string;
+  excerpt: string;
+  content: ContentBlock[];
+  evidence: Evidence[];
+  evidenceRating: number;
+  replyCount: number;
+  upvotes: number;
+  saves: number;
+  views: number;
+  country: string;
+  live?: boolean;
+}
+
 export interface Reply {
   id: string;
   barkId: string;

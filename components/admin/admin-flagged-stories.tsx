@@ -33,7 +33,7 @@ export function AdminFlaggedStories() {
           description="Story reports appear here until they are reviewed."
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border">
+        <div className="min-w-0 overflow-x-auto rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>

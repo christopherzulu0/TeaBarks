@@ -29,7 +29,7 @@ export function AdminUsers() {
           description="Clerk-synced members appear here after they sign in."
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border">
+        <div className="min-w-0 overflow-x-auto rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -50,9 +50,9 @@ export function AdminUsers() {
                         imageUrl={u.imageUrl ?? undefined}
                         className="size-8"
                       />
-                      <div>
-                        <p className="font-medium">{u.name}</p>
-                        <p className="text-xs text-muted-foreground">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{u.name}</p>
+                        <p className="truncate text-xs text-muted-foreground">
                           {u.email}
                         </p>
                       </div>

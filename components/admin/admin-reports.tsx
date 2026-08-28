@@ -34,7 +34,7 @@ export function AdminReports() {
           description="Bark, case, and story reports appear here for review."
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border">
+        <div className="min-w-0 overflow-x-auto rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>

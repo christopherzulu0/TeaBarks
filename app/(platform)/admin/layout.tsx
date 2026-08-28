@@ -5,5 +5,9 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <RequireAdmin>{children}</RequireAdmin>;
+  return (
+    <RequireAdmin>
+      <div className="min-w-0 w-full overflow-x-hidden">{children}</div>
+    </RequireAdmin>
+  );
 }

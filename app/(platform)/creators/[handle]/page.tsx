@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CreatorProfile } from "@/components/creators/creator-profile";
 import { listPublicBarks } from "@/app/actions/barks";
+import { listCreatorReviewsByCreator } from "@/app/actions/creator-reviews";
 import { listCases } from "@/app/actions/cases";
 import { getCreatorByHandleAction } from "@/app/actions/creators";
 
@@ -25,9 +26,10 @@ export default async function CreatorPage(
   const creator = await getCreatorByHandleAction(handle);
   if (!creator) notFound();
 
-  const [publishedBarks, publishedCases] = await Promise.all([
+  const [publishedBarks, publishedCases, reviews] = await Promise.all([
     listPublicBarks(),
     listCases(),
+    listCreatorReviewsByCreator(creator.id),
   ]);
   const handleKey = creator.handle.toLowerCase();
   const barksAbout = publishedBarks.filter((b) => {

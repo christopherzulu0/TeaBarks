@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ExternalLink, MessageSquare } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { BarkContent } from "@/components/bark/bark-content";
 import { LikeButton } from "@/components/bark/like-button";
 import { LiveReplyThread } from "@/components/bark/live-reply-thread";
@@ -19,6 +19,7 @@ import { EvidenceRating } from "@/components/evidence-rating";
 import { PersonAvatar } from "@/components/person-avatar";
 import { PlatformIcon } from "@/components/platform-icon";
 import { SaveSourceButton } from "@/components/sources/save-source-button";
+import { ViewOriginalSourceLink } from "@/components/sources/view-original-source-link";
 import { SourceThumb } from "@/components/source-thumb";
 import { VerifiedBadge } from "@/components/verified-badge";
 import {
@@ -286,15 +287,12 @@ export default async function BarkPage(props: PageProps<"/barks/[code]">) {
                     <span aria-hidden>·</span>
                     {formatDate(source.publishedAt)}
                   </p>
-                  <a
-                    href={source.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                  >
-                    View original source{" "}
-                    <ExternalLink className="size-3" aria-hidden />
-                  </a>
+                  {source.url ? (
+                    <ViewOriginalSourceLink
+                      url={source.url}
+                      platform={source.platform}
+                    />
+                  ) : null}
                   {bark.live && source.url ? (
                     <div className="pt-2">
                       <SaveSourceButton

@@ -29,13 +29,20 @@ export function GrowthChart({
   }[];
 }) {
   return (
-    <ChartContainer config={config} className="h-72 w-full">
-      <AreaChart data={data}>
+    <ChartContainer config={config} className="h-72 min-w-0 w-full">
+      <AreaChart data={data} margin={{ left: 0, right: 8 }}>
         <CartesianGrid vertical={false} />
-        <XAxis dataKey="month" tickLine={false} axisLine={false} />
-        <YAxis tickLine={false} axisLine={false} width={44} />
+        <XAxis
+          dataKey="month"
+          tickLine={false}
+          axisLine={false}
+          tick={{ fontSize: 11 }}
+        />
+        <YAxis tickLine={false} axisLine={false} width={36} tick={{ fontSize: 11 }} />
         <ChartTooltip content={<ChartTooltipContent />} />
-        <ChartLegend content={<ChartLegendContent />} />
+        <ChartLegend
+          content={<ChartLegendContent className="flex-wrap justify-start gap-x-4 gap-y-2" />}
+        />
         <Area
           dataKey="users"
           type="monotone"

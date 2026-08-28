@@ -5,6 +5,7 @@ import {
   barkLikeFields,
   barkSaveFields,
   barkReportFields,
+  creatorReviewFields,
   caseDocFields,
   caseFollowFields,
   caseSaveFields,
@@ -67,6 +68,15 @@ export default defineSchema({
       "status",
       "publishedAt",
     ]),
+  creatorReviews: defineTable(creatorReviewFields)
+    .index("by_code", ["code"])
+    .index("by_status_publishedAt", ["status", "publishedAt"])
+    .index("by_creator_status_publishedAt", [
+      "creatorId",
+      "status",
+      "publishedAt",
+    ])
+    .index("by_author", ["authorClerkId"]),
   barkLikes: defineTable(barkLikeFields)
     .index("by_bark_user", ["barkId", "clerkUserId"])
     .index("by_bark", ["barkId"]),

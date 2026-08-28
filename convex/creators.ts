@@ -163,6 +163,16 @@ export const getByHandle = query({
   },
 });
 
+export const getById = query({
+  args: { id: v.id("creators") },
+  returns: v.union(creatorDoc, v.null()),
+  handler: async (ctx, args) => {
+    const creator = await ctx.db.get(args.id);
+    if (!creator || creator.status !== "approved") return null;
+    return creator;
+  },
+});
+
 export const getMine = query({
   args: {},
   returns: v.union(creatorDoc, v.null()),

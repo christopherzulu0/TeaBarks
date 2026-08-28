@@ -41,14 +41,14 @@ export function initials(name: string): string {
 
 /** Deterministic gradient class pair from an id, for avatar/thumbnail placeholders. */
 const GRADIENTS = [
-  "from-teal-500/80 to-cyan-700/80",
+  "from-orange-500/80 to-red-700/80",
   "from-amber-500/80 to-orange-700/80",
   "from-violet-500/80 to-purple-800/80",
-  "from-emerald-500/80 to-teal-800/80",
   "from-rose-500/80 to-red-800/80",
-  "from-sky-500/80 to-blue-800/80",
+  "from-rose-500/80 to-red-800/80",
+  "from-amber-600/80 to-orange-900/80",
   "from-fuchsia-500/80 to-pink-800/80",
-  "from-lime-500/80 to-green-800/80",
+  "from-yellow-600/80 to-amber-900/80",
 ];
 
 export function gradientFor(id: string): string {

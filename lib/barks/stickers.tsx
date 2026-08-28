@@ -61,8 +61,8 @@ function EvidenceIcon(props: SVGProps<SVGSVGElement>) {
 function AgreeIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...svgProps} {...props}>
-      <circle cx="32" cy="32" r="30" fill="#15803d" />
-      <path d="M18 34l8 8 20-22" fill="none" stroke="#ecfdf5" strokeWidth="5" strokeLinecap="round" />
+      <circle cx="32" cy="32" r="30" fill="#E44A0A" />
+      <path d="M18 34l8 8 20-22" fill="none" stroke="#fff7ed" strokeWidth="5" strokeLinecap="round" />
     </svg>
   );
 }
@@ -99,9 +99,9 @@ function UnpackIcon(props: SVGProps<SVGSVGElement>) {
 function VerifiedIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...svgProps} {...props}>
-      <circle cx="32" cy="32" r="30" fill="#0f766e" />
-      <path d="M32 14l5 8 9 1-7 7 2 9-9-5-9 5 2-9-7-7 9-1z" fill="#ccfbf1" />
-      <path d="M26 32l4 4 8-10" fill="none" stroke="#0f766e" strokeWidth="2.5" />
+      <circle cx="32" cy="32" r="30" fill="#c2410c" />
+      <path d="M32 14l5 8 9 1-7 7 2 9-9-5-9 5 2-9-7-7 9-1z" fill="#ffedd5" />
+      <path d="M26 32l4 4 8-10" fill="none" stroke="#c2410c" strokeWidth="2.5" />
     </svg>
   );
 }

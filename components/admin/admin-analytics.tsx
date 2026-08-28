@@ -31,7 +31,7 @@ export function AdminAnalytics() {
             six months
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="min-w-0">
           <GrowthChart data={growth ?? []} />
         </CardContent>
       </Card>

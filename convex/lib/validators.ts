@@ -113,6 +113,28 @@ export const barkDocFields = {
   country: v.optional(v.string()),
 };
 
+export const creatorReviewFields = {
+  code: v.string(),
+  creatorId: v.id("creators"),
+  type: barkType,
+  title: v.string(),
+  body: v.string(),
+  excerpt: v.string(),
+  status: barkStatus,
+  authorClerkId: v.string(),
+  authorName: v.string(),
+  authorImageUrl: v.optional(v.string()),
+  orgClerkId: v.union(v.string(), v.null()),
+  evidence: v.array(evidenceItem),
+  evidenceRating: v.number(),
+  publishedAt: v.number(),
+  replyCount: v.number(),
+  upvotes: v.number(),
+  saves: v.number(),
+  views: v.number(),
+  country: v.optional(v.string()),
+};
+
 export const reportCategory = v.union(
   v.literal("hate-speech"),
   v.literal("discrimination"),

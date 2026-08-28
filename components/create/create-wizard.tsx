@@ -235,7 +235,7 @@ function applyPersistedDraft(
   set.setStep(resumeStep(draft.step, source, draft.barkType));
 }
 
-export function CreateWizard() {
+export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
   const { user } = useUser();
   const userId = user?.id;
   const queryClient = useQueryClient();
@@ -554,9 +554,9 @@ export function CreateWizard() {
   return (
     <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
       <div className="space-y-1 text-center">
-        <h1 className="text-2xl font-bold tracking-tight">Create a Bark</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Create a Reaction</h1>
         <p className="text-sm text-muted-foreground">
-          Every Bark begins with a public source and is built on evidence.
+          Every reaction begins with a public source and is built on evidence.
         </p>
       </div>
 
@@ -1167,7 +1167,7 @@ export function CreateWizard() {
                 </div>
                 <div className="rounded-lg border p-3">
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Visibility & Bark Code
+                    Visibility & reaction code
                   </p>
                   <div className="mt-1 flex items-center gap-2">
                     <Select value={visibility} onValueChange={setVisibility}>
@@ -1186,7 +1186,7 @@ export function CreateWizard() {
                     <BarkCode code={barkCode} size="md" />
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Your permanent, citable Bark Code is generated at publish.
+                    Your permanent, citable reaction code is generated at publish.
                     Copy it so others can search for this bark by code.
                   </p>
                 </div>

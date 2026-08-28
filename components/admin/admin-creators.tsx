@@ -39,7 +39,7 @@ export function AdminCreators() {
           description="Pending, approved, and rejected creator profiles appear here."
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border">
+        <div className="min-w-0 overflow-x-auto rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>

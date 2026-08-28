@@ -13,6 +13,7 @@ import type * as barks from "../barks.js";
 import type * as cases from "../cases.js";
 import type * as clerk from "../clerk.js";
 import type * as contests from "../contests.js";
+import type * as creatorReviews from "../creatorReviews.js";
 import type * as creators from "../creators.js";
 import type * as evidenceFiles from "../evidenceFiles.js";
 import type * as follows from "../follows.js";
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   cases: typeof cases;
   clerk: typeof clerk;
   contests: typeof contests;
+  creatorReviews: typeof creatorReviews;
   creators: typeof creators;
   evidenceFiles: typeof evidenceFiles;
   follows: typeof follows;

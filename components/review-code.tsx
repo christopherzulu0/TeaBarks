@@ -2,7 +2,7 @@
 
 import { CopyableCode } from "@/components/copyable-code";
 
-export function BarkCode({
+export function ReviewCode({
   code,
   size = "sm",
   className,
@@ -16,9 +16,9 @@ export function BarkCode({
       code={code}
       size={size}
       className={className}
-      label="reaction code"
-      toastTitle="Reaction code copied"
-      toastDescription="Others can paste it into Search to find this reaction."
+      label="review code"
+      toastTitle="Review code copied"
+      toastDescription="Others can paste it into Search to find this review."
     />
   );
 }

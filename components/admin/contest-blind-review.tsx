@@ -115,7 +115,7 @@ export function ContestBlindReview({
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6 px-4 py-8">
       <Link
         href="/admin"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
@@ -195,7 +195,7 @@ export function ContestBlindReview({
                   <h3 className="font-medium">
                     Part {chapter.number}: {chapter.title}
                   </h3>
-                  <div className="whitespace-pre-wrap font-serif text-sm leading-relaxed text-foreground/90">
+                  <div className="break-words whitespace-pre-wrap font-serif text-sm leading-relaxed text-foreground/90">
                     {chapter.body}
                   </div>
                 </article>

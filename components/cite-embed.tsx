@@ -84,7 +84,7 @@ export function CiteEmbed({
             </TabsTrigger>
           </TabsList>
           <TabsContent value="qr" className="mt-3 flex flex-col items-center gap-3">
-            <div className="rounded-lg border bg-white p-3">
+            <div className="rounded-lg border bg-card p-3">
               <QRCodeSVG value={url} size={140} level="M" includeMargin={false} />
             </div>
             <p className="text-center font-mono text-[10px] text-muted-foreground">

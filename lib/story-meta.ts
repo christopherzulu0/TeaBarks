@@ -63,7 +63,7 @@ export const genreMeta: Record<
     label: "Cold Cases",
     icon: Snowflake,
     description: "Years later, new light on files that were supposed to stay closed.",
-    gradient: "from-cyan-700/80 to-slate-800/80",
+    gradient: "from-slate-600/80 to-zinc-900/80",
   },
   "court-cases": {
     label: "Court Cases",
@@ -123,7 +123,7 @@ export const genreMeta: Record<
     label: "Legends & Folklore",
     icon: BookMarked,
     description: "Stories a culture kept telling until they felt like fact.",
-    gradient: "from-emerald-700/80 to-teal-950/80",
+    gradient: "from-orange-700/80 to-red-950/80",
   },
   "strange-cases": {
     label: "Strange Cases",
@@ -135,13 +135,13 @@ export const genreMeta: Record<
     label: "Witness Stories",
     icon: Eye,
     description: "First-hand accounts, told by the people who were there.",
-    gradient: "from-teal-600/80 to-cyan-900/80",
+    gradient: "from-amber-700/80 to-orange-950/80",
   },
   "untold-stories": {
     label: "Untold Stories",
     icon: BookOpen,
     description: "What never made the headline, reconstructed anyway.",
-    gradient: "from-lime-700/80 to-green-950/80",
+    gradient: "from-yellow-700/80 to-amber-950/80",
   },
   "forgotten-stories": {
     label: "Forgotten Stories",
@@ -165,7 +165,7 @@ export const genreMeta: Record<
     label: "Maritime",
     icon: Anchor,
     description: "Ships, crews, and the water that keeps its own records.",
-    gradient: "from-blue-800/80 to-cyan-950/80",
+    gradient: "from-blue-800/80 to-indigo-950/80",
   },
   survival: {
     label: "Survival",
@@ -207,19 +207,19 @@ export const genreMeta: Record<
     label: "Science Mysteries",
     icon: FlaskConical,
     description: "Experiments, anomalies, and claims that outran the evidence.",
-    gradient: "from-cyan-500/80 to-teal-900/80",
+    gradient: "from-orange-600/80 to-red-900/80",
   },
   "ocean-mysteries": {
     label: "Ocean Mysteries",
     icon: Waves,
     description: "What the deep keeps — wrecks, disappearances, and the unmapped.",
-    gradient: "from-teal-700/80 to-blue-950/80",
+    gradient: "from-amber-700/80 to-orange-950/80",
   },
   "lost-places-discoveries": {
     label: "Lost Places & Discoveries",
     icon: Compass,
     description: "Abandoned rooms, buried maps, and what turned up later.",
-    gradient: "from-emerald-600/80 to-green-950/80",
+    gradient: "from-orange-600/80 to-amber-950/80",
   },
   "remarkable-people": {
     label: "Remarkable People",
@@ -243,13 +243,13 @@ export const genreMeta: Record<
     label: "Justice & Convictions",
     icon: Scale,
     description: "Verdicts, appeals, and whether the outcome matched the facts.",
-    gradient: "from-emerald-800/80 to-slate-900/80",
+    gradient: "from-orange-800/80 to-slate-900/80",
   },
   "teabarks-originals": {
     label: "TeaBarks Originals",
     icon: Leaf,
     description: "Stories commissioned and told here first.",
-    gradient: "from-green-600/80 to-emerald-950/80",
+    gradient: "from-amber-600/80 to-orange-950/80",
   },
 };
 
