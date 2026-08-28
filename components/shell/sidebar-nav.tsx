@@ -6,6 +6,7 @@ import { Building2, LayoutDashboard, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { useIsAdmin } from "@/components/auth/require-admin";
 import { useMyWriterApplication } from "@/components/stories/writer-cta";
 import { UnreadCountBadge, MessagesUnreadBadge } from "@/components/notifications/unread-badge";
 import { mainNav, personalNav, type NavItem } from "./nav-items";
@@ -40,6 +41,7 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
 
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const isAdmin = useIsAdmin();
   const { loading, application } = useMyWriterApplication();
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -73,22 +75,18 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       {personalItems.map((item) => (
         <NavLink key={item.href} item={item} active={isActive(item.href)} />
       ))}
-      <Separator className="my-2" />
-      <p className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-        Workspaces
-      </p>
-      <NavLink
-        item={{ href: "/org", label: "Organization", icon: Building2 }}
-        active={isActive("/org")}
-      />
-      <NavLink
-        item={{ href: "/admin", label: "Admin Dashboard", icon: LayoutDashboard }}
-        active={isActive("/admin")}
-      />
-      {/* <NavLink
-        item={{ href: "/settings", label: "Settings", icon: Settings }}
-        active={isActive("/settings")}
-      /> */}
+      {isAdmin && (
+        <>
+          <Separator className="my-2" />
+          <p className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Workspaces
+          </p>
+          <NavLink
+            item={{ href: "/admin", label: "Admin Dashboard", icon: LayoutDashboard }}
+            active={isActive("/admin")}
+          />
+        </>
+      )}
     </nav>
   );
 }
