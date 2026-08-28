@@ -1,18 +1,10 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { Copy, ExternalLink, Link2, Play } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import type { SourcePlatform } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -41,22 +33,111 @@ export function ViewOriginalSourceLink({
   className?: string;
 }) {
   const [open, setOpen] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
   const primaryLabel = primaryActionLabel(platform);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const close = React.useCallback(() => setOpen(false), []);
+
+  React.useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open, close]);
 
   const openExternal = () => {
     window.open(url, "_blank", "noopener,noreferrer");
-    setOpen(false);
+    close();
   };
 
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied");
-      setOpen(false);
+      close();
     } catch {
       toast.error("Couldn't copy. Select and copy it manually.");
     }
   };
+
+  const sheet =
+    open && mounted
+      ? createPortal(
+          <div
+            className="fixed inset-0 z-[100]"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="view-source-title"
+          >
+            <button
+              type="button"
+              className="absolute inset-0 bg-black/40"
+              aria-label="Dismiss"
+              onClick={close}
+            />
+            <div
+              className="absolute inset-x-0 bottom-0 z-10 max-h-[85dvh] overflow-y-auto rounded-t-2xl border-t bg-popover p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-lg"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <h2
+                id="view-source-title"
+                className="pr-8 text-base font-medium text-foreground"
+              >
+                Open external source?
+              </h2>
+              <p className="mt-2 break-all text-left text-xs leading-relaxed text-muted-foreground">
+                {url}
+              </p>
+              <div className="mt-4 flex flex-col gap-2">
+                <Button
+                  type="button"
+                  size="lg"
+                  className="h-11 w-full"
+                  onClick={openExternal}
+                >
+                  {VIDEO_PLATFORMS.has(platform) ? (
+                    <Play className="size-4" aria-hidden />
+                  ) : (
+                    <Link2 className="size-4" aria-hidden />
+                  )}
+                  {primaryLabel}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="h-11 w-full"
+                  onClick={() => void copyLink()}
+                >
+                  <Copy className="size-4" aria-hidden />
+                  Copy link
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="lg"
+                  className="h-11 w-full"
+                  onClick={close}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )
+      : null;
 
   return (
     <>
@@ -72,62 +153,18 @@ export function ViewOriginalSourceLink({
 
       <button
         type="button"
-        className={cn(linkClassName, "lg:hidden", className)}
-        onClick={() => setOpen(true)}
+        className={cn(linkClassName, "touch-manipulation lg:hidden", className)}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setOpen(true);
+        }}
       >
         View original source{" "}
         <ExternalLink className="size-3" aria-hidden />
       </button>
 
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent
-          side="bottom"
-          className="max-h-[85dvh] w-full max-w-full gap-0 overflow-hidden rounded-t-2xl border-t p-0 pb-[max(1rem,env(safe-area-inset-bottom))]"
-        >
-          <SheetHeader className="border-b px-4 pb-3 pt-1 text-left">
-            <SheetTitle>Open external source?</SheetTitle>
-            <SheetDescription className="break-all text-left text-xs leading-relaxed">
-              {url}
-            </SheetDescription>
-          </SheetHeader>
-
-          <SheetFooter className="gap-2 px-4 pt-4">
-            <Button
-              type="button"
-              size="lg"
-              className="h-11 w-full"
-              onClick={openExternal}
-            >
-              {VIDEO_PLATFORMS.has(platform) ? (
-                <Play className="size-4" aria-hidden />
-              ) : (
-                <Link2 className="size-4" aria-hidden />
-              )}
-              {primaryLabel}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="lg"
-              className="h-11 w-full"
-              onClick={() => void copyLink()}
-            >
-              <Copy className="size-4" aria-hidden />
-              Copy link
-            </Button>
-            <SheetClose asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="lg"
-                className="h-11 w-full"
-              >
-                Cancel
-              </Button>
-            </SheetClose>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+      {sheet}
     </>
   );
 }
