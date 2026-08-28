@@ -9,12 +9,10 @@ import {
   PenLine,
 } from "lucide-react";
 import { useConvexAuth, useQuery } from "convex/react";
-import { FeatureLink } from "@/components/auth/feature-link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
-import { FEATURES } from "@/lib/billing";
 
 export function useMyWriterApplication() {
   const { isAuthenticated, isLoading } = useConvexAuth();
@@ -46,12 +44,9 @@ export function WriterHomeBanner() {
           </p>
         </div>
         <Button asChild className="shrink-0">
-          <FeatureLink
-            feature={FEATURES.writerDashboard}
-            href="/stories/dashboard"
-          >
+          <Link href="/stories/dashboard">
             Open dashboard <ArrowRight className="size-4" />
-          </FeatureLink>
+          </Link>
         </Button>
       </Card>
     );
@@ -111,12 +106,7 @@ export function WriterHomeBanner() {
           </Link>
         </Button>
         <Button asChild variant="outline">
-          <FeatureLink
-            feature={FEATURES.writerDashboard}
-            href="/stories/dashboard"
-          >
-            Dashboard
-          </FeatureLink>
+          <Link href="/stories/dashboard">Dashboard</Link>
         </Button>
       </div>
     </Card>
@@ -134,12 +124,9 @@ export function WriterDiscoverCtas() {
           <Skeleton className="h-10 w-44" />
         ) : status === "approved" ? (
           <Button asChild size="lg">
-            <FeatureLink
-              feature={FEATURES.writerDashboard}
-              href="/stories/dashboard"
-            >
+            <Link href="/stories/dashboard">
               <LayoutDashboard className="size-4" /> Writer dashboard
-            </FeatureLink>
+            </Link>
           </Button>
         ) : !status ? (
           <Button asChild size="lg">
@@ -176,13 +163,12 @@ export function WriterContestsCta() {
     return (
       <p className="text-xs text-muted-foreground">
         Enter from the{" "}
-        <FeatureLink
-          feature={FEATURES.writerDashboard}
+        <Link
           href="/stories/dashboard"
           className="text-primary underline underline-offset-4"
         >
           writer dashboard
-        </FeatureLink>
+        </Link>
         .
       </p>
     );

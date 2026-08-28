@@ -6,7 +6,7 @@ import {
   type MutationCtx,
   type QueryCtx,
 } from "./_generated/server";
-import { clerkOrgId, clerkUserId, requireBillingFeature, requireIdentity } from "./lib/auth";
+import { clerkOrgId, clerkUserId, requireIdentity } from "./lib/auth";
 import { recordModerationEvent } from "./lib/moderation";
 import {
   notifyMany,
@@ -87,7 +87,6 @@ export const create = mutation({
   returns: v.object({ code: v.string() }),
   handler: async (ctx, args) => {
     const identity = await requireIdentity(ctx);
-    requireBillingFeature(identity, "create_bark");
     const authorClerkId = clerkUserId(identity);
     const user = await ctx.db
       .query("users")

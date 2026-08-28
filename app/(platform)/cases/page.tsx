@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Scale } from "lucide-react";
 import { listCases } from "@/app/actions/cases";
-import { PermissionGate } from "@/components/auth/permission-gate";
 import { CasesList } from "@/components/cases/cases-list";
 import { Button } from "@/components/ui/button";
 
@@ -25,13 +24,11 @@ export default async function CasesPage() {
             version history and creator right-of-reply.
           </p>
         </div>
-        <PermissionGate permission="org:cases:open" hideWhenDenied>
-          <Button asChild className="shrink-0">
-            <Link href="/cases/new">
-              <Scale className="size-4" /> Open a case
-            </Link>
-          </Button>
-        </PermissionGate>
+        <Button asChild className="shrink-0">
+          <Link href="/cases/new">
+            <Scale className="size-4" /> Open a case
+          </Link>
+        </Button>
       </div>
       <CasesList initialCases={cases} />
     </div>

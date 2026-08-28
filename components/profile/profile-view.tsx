@@ -40,10 +40,7 @@ import { formatDate, formatNumber, gradientFor } from "@/lib/format";
 import { barkTypeMeta } from "@/lib/meta";
 import { useUser } from "@clerk/nextjs";
 import { useConvexAuth, useQuery } from "convex/react";
-import { PermissionGate } from "@/components/auth/permission-gate";
-import { FeatureLink } from "@/components/auth/feature-link";
 import { api } from "@/convex/_generated/api";
-import { FEATURES } from "@/lib/billing";
 import { toUiCase } from "@/lib/cases/query";
 import { toUiBark } from "@/lib/barks/query";
 import { CountrySelect } from "@/components/profile/country-select";
@@ -483,9 +480,9 @@ export function ProfileView({
                 {isOwner ? (
                   <>
                     <Button asChild className="h-10 w-full sm:h-8 sm:w-auto">
-                      <FeatureLink feature={FEATURES.createBark} href="/create">
+                      <Link href="/create">
                         <PenSquare className="size-4" /> New Bark
-                      </FeatureLink>
+                      </Link>
                     </Button>
                     <Button
                       variant="outline"
@@ -529,9 +526,9 @@ export function ProfileView({
                   </p>
                 </div>
                 <Button asChild size="sm" className="shrink-0">
-                  <FeatureLink feature={FEATURES.createBark} href="/create">
+                  <Link href="/create">
                     Resume draft
-                  </FeatureLink>
+                  </Link>
                 </Button>
               </div>
             )}
@@ -610,12 +607,11 @@ export function ProfileView({
                       action={
                         isOwner ? (
                           <Button asChild size="sm">
-                            <FeatureLink
-                              feature={FEATURES.createBark}
+                            <Link
                               href="/create"
                             >
                               Create a Bark
-                            </FeatureLink>
+                            </Link>
                           </Button>
                         ) : undefined
                       }
@@ -633,11 +629,9 @@ export function ProfileView({
                         title="No cases opened"
                         description="Accountability cases you open appear here with their status."
                         action={
-                          <PermissionGate permission="org:cases:open" hideWhenDenied>
-                            <Button asChild size="sm" variant="outline">
-                              <Link href="/cases/new">Open a case</Link>
-                            </Button>
-                          </PermissionGate>
+                          <Button asChild size="sm" variant="outline">
+                            <Link href="/cases/new">Open a case</Link>
+                          </Button>
                         }
                       />
                     ) : (
@@ -727,12 +721,11 @@ export function ProfileView({
                           </p>
                         </div>
                         <Button asChild size="sm" className="shrink-0">
-                          <FeatureLink
-                            feature={FEATURES.createBark}
+                          <Link
                             href="/create"
                           >
                             Resume
-                          </FeatureLink>
+                          </Link>
                         </Button>
                       </div>
                     </Card>
@@ -743,12 +736,11 @@ export function ProfileView({
                       description="Drafts you save from the Bark editor will appear here."
                       action={
                         <Button asChild size="sm">
-                          <FeatureLink
-                            feature={FEATURES.createBark}
+                          <Link
                             href="/create"
                           >
                             Start a Bark
-                          </FeatureLink>
+                          </Link>
                         </Button>
                       }
                     />
@@ -823,15 +815,13 @@ export function ProfileView({
                   <h2 className="text-sm font-semibold">Quick actions</h2>
                   <div className="grid gap-2">
                     <Button asChild variant="secondary" size="sm">
-                      <FeatureLink feature={FEATURES.createBark} href="/create">
+                      <Link href="/create">
                         Create Bark
-                      </FeatureLink>
+                      </Link>
                     </Button>
-                    <PermissionGate permission="org:cases:open" hideWhenDenied>
-                      <Button asChild variant="outline" size="sm">
-                        <Link href="/cases/new">Open case</Link>
-                      </Button>
-                    </PermissionGate>
+                    <Button asChild variant="outline" size="sm">
+                      <Link href="/cases/new">Open case</Link>
+                    </Button>
                     <Button asChild variant="outline" size="sm">
                       <Link href="/notifications">Notifications</Link>
                     </Button>
@@ -850,8 +840,7 @@ export function ProfileView({
                   {writerCtaLoading ? (
                     <div className="h-[4.5rem] animate-pulse rounded-lg border bg-muted/40" />
                   ) : writer ? (
-                    <FeatureLink
-                      feature={FEATURES.writerDashboard}
+                    <Link
                       href="/stories/dashboard"
                       className="flex items-start gap-3 rounded-lg border p-3 transition-colors hover:border-primary/40 hover:bg-muted/40"
                     >
@@ -864,7 +853,7 @@ export function ProfileView({
                           Writing as {writer.penName} · @{writer.handle}
                         </span>
                       </span>
-                    </FeatureLink>
+                    </Link>
                   ) : myWriterApp ? (
                     <Link
                       href="/stories/dashboard"

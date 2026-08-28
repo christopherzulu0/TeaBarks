@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { mutation, query } from "./_generated/server";
-import { clerkUserId, requireBillingFeature, requireIdentity } from "./lib/auth";
+import { clerkUserId, requireIdentity } from "./lib/auth";
 import {
   storyChapterDocFields,
   storyDocFields,
@@ -162,8 +162,7 @@ export const create = mutation({
   },
   returns: v.object({ slug: v.string() }),
   handler: async (ctx, args) => {
-    const { writer, clerkId, identity } = await requireApprovedWriter(ctx);
-    requireBillingFeature(identity, "writer_dashboard");
+    const { writer, clerkId } = await requireApprovedWriter(ctx);
     const title = args.title.trim();
     if (!title) throw new Error("A title is required");
 

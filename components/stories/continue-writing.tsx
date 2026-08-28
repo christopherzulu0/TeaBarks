@@ -14,7 +14,6 @@ import {
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import { CoverPicker } from "@/components/stories/cover-picker";
-import { FeatureLink } from "@/components/auth/feature-link";
 import { StorySettingsDialog } from "@/components/stories/story-settings-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,7 +34,6 @@ import {
 } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
-import { FEATURES } from "@/lib/billing";
 import type { StoryGenre, StoryStatus } from "@/lib/story-types";
 
 const DRAFT_KEY = "draft";
@@ -139,13 +137,12 @@ export function ContinueWriting({
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <FeatureLink
-          feature={FEATURES.writerDashboard}
+        <Link
           href="/stories/dashboard"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-3.5" aria-hidden /> Dashboard
-        </FeatureLink>
+        </Link>
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <Badge variant="secondary">{genreLabel}</Badge>
           <span>{words} words</span>

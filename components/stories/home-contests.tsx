@@ -3,13 +3,11 @@
 import Link from "next/link";
 import { ArrowRight, Trophy } from "lucide-react";
 import { useQuery } from "convex/react";
-import { FeatureGate } from "@/components/auth/feature-gate";
 import { ContestEntryDialog } from "@/components/stories/contest-entry-dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { FEATURES } from "@/lib/billing";
 import { formatNumber } from "@/lib/format";
 import { toUiContest, type UiContest } from "@/lib/contests/query";
 
@@ -66,19 +64,10 @@ export function HomeContests({ contests }: { contests: UiContest[] }) {
                 </div>
                 <div className="flex flex-wrap gap-2 pt-1">
                   {contest.status === "active" ? (
-                    <FeatureGate
-                      feature={FEATURES.writerDashboard}
-                      fallback={
-                        <Button asChild size="sm" variant="outline">
-                          <Link href="/pricing">Upgrade to enter</Link>
-                        </Button>
-                      }
-                    >
-                      <ContestEntryDialog
-                        contestId={contest.id as Id<"contests">}
-                        contestName={contest.name}
-                      />
-                    </FeatureGate>
+                    <ContestEntryDialog
+                      contestId={contest.id as Id<"contests">}
+                      contestName={contest.name}
+                    />
                   ) : null}
                   <Button asChild size="sm" variant="outline">
                     <Link href="/stories/contests">Details</Link>

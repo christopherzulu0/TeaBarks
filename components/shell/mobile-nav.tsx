@@ -4,8 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, Compass, Home, PenSquare, UserCircle } from "lucide-react";
 import { UnreadCountBadge } from "@/components/notifications/unread-badge";
-import { useBillingAccess } from "@/components/auth/use-billing";
-import { FEATURES } from "@/lib/billing";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -18,7 +16,6 @@ const items = [
 
 export function MobileNav() {
   const pathname = usePathname();
-  const billing = useBillingAccess();
 
   return (
     <nav
@@ -27,10 +24,7 @@ export function MobileNav() {
     >
       <div className="grid grid-cols-5">
         {items.map((item) => {
-          const href =
-            item.href === "/create"
-              ? billing.hrefFor(FEATURES.createBark, item.href)
-              : item.href;
+          const href = item.href;
           const active =
             item.href === "/"
               ? pathname === "/"

@@ -13,7 +13,6 @@ import {
   Bell,
   Bookmark,
   Building2,
-  CreditCard,
   Menu,
   Settings,
   UserCircle,
@@ -155,11 +154,6 @@ export function TopNav() {
                   href="/settings"
                   label="Settings"
                   labelIcon={<Settings className="size-4" />}
-                />
-                <UserButton.Link
-                  href="/pricing"
-                  label="Pricing"
-                  labelIcon={<CreditCard className="size-4" />}
                 />
               </UserButton.MenuItems>
             </UserButton>

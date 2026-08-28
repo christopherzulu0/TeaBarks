@@ -5,7 +5,6 @@ import { Check, Scale, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
-import { PermissionGate } from "@/components/auth/permission-gate";
 import { StartMessageButton } from "@/components/messages/start-message-button";
 import { ReportButton } from "@/components/report-dialog";
 import { Button } from "@/components/ui/button";
@@ -83,13 +82,11 @@ export function CreatorProfileActions({
     <div className="flex flex-wrap gap-2">
       <CreatorFollowButton creatorId={creatorId} name={name} />
       <StartMessageButton kind="creator" creatorHandle={handle} />
-      <PermissionGate permission="org:cases:open" hideWhenDenied>
-        <Button asChild variant="outline">
-          <Link href={`/cases/new?creator=${handle}`}>
-            <Scale className="size-4" /> Open case
-          </Link>
-        </Button>
-      </PermissionGate>
+      <Button asChild variant="outline">
+        <Link href={`/cases/new?creator=${handle}`}>
+          <Scale className="size-4" /> Open case
+        </Link>
+      </Button>
       <ReportButton target={`profile @${handle}`} iconOnly />
     </div>
   );

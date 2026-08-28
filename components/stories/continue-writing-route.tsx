@@ -2,13 +2,11 @@
 
 import { useConvexAuth, useQuery } from "convex/react";
 import { useParams } from "next/navigation";
-import { FeatureGate } from "@/components/auth/feature-gate";
 import { EmptyState } from "@/components/empty-state";
 import { RouteLoading } from "@/components/route-loading";
 import { ContinueWriting } from "@/components/stories/continue-writing";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
-import { FEATURES } from "@/lib/billing";
 import { getGenreMeta } from "@/lib/story-meta";
 import Link from "next/link";
 import { PenLine } from "lucide-react";
@@ -69,14 +67,12 @@ export function ContinueWritingRoute() {
     : live.publishedChapterCount + 1;
 
   return (
-    <FeatureGate feature={FEATURES.writerDashboard}>
-      <ContinueWriting
-        storyTitle={live.story.title}
-        slug={slug}
-        genreLabel={getGenreMeta(live.story.genre).label}
-        initialTitle={live.draft?.title ?? `Part ${nextNumber}`}
-        initialBody={live.draft?.body ?? ""}
-      />
-    </FeatureGate>
+    <ContinueWriting
+      storyTitle={live.story.title}
+      slug={slug}
+      genreLabel={getGenreMeta(live.story.genre).label}
+      initialTitle={live.draft?.title ?? `Part ${nextNumber}`}
+      initialBody={live.draft?.body ?? ""}
+    />
   );
 }

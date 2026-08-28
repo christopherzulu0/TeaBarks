@@ -12,9 +12,6 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { FeatureLink } from "@/components/auth/feature-link";
-import { PermissionGate } from "@/components/auth/permission-gate";
-import { FEATURES } from "@/lib/billing";
 import { BarkCard } from "@/components/bark-card";
 import { CaseCard } from "@/components/case-card";
 import { CreatorProfileActions } from "@/components/creators/creator-actions";
@@ -200,9 +197,9 @@ export function CreatorProfile({
                       Indexed public content under discussion on TeaBarks.
                     </p>
                     <Button asChild size="sm" variant="outline">
-                      <FeatureLink feature={FEATURES.createBark} href="/create">
+                      <Link href="/create">
                         Bark about a source
-                      </FeatureLink>
+                      </Link>
                     </Button>
                   </div>
                   {sources.length === 0 ? (
@@ -228,12 +225,7 @@ export function CreatorProfile({
                       description="Be the first to write an evidence-based response to this creator's content."
                       action={
                         <Button asChild size="sm">
-                          <FeatureLink
-                            feature={FEATURES.createBark}
-                            href="/create"
-                          >
-                            Create a Bark
-                          </FeatureLink>
+                          <Link href="/create">Create a Bark</Link>
                         </Button>
                       }
                     />
@@ -244,13 +236,11 @@ export function CreatorProfile({
 
                 <TabsContent value="cases" className="mt-4 space-y-3">
                   <div className="flex justify-end">
-                    <PermissionGate permission="org:cases:open" hideWhenDenied>
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={`/cases/new?creator=${creator.handle}`}>
-                          <Scale className="size-3.5" /> Open a case
-                        </Link>
-                      </Button>
-                    </PermissionGate>
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/cases/new?creator=${creator.handle}`}>
+                        <Scale className="size-3.5" /> Open a case
+                      </Link>
+                    </Button>
                   </div>
                   {cases.length === 0 ? (
                     <EmptyState
@@ -382,9 +372,9 @@ export function CreatorProfile({
                   <h2 className="text-sm font-semibold">Quick actions</h2>
                   <div className="grid gap-2">
                     <Button asChild variant="secondary" size="sm">
-                      <FeatureLink feature={FEATURES.createBark} href="/create">
+                      <Link href="/create">
                         Start a Bark
-                      </FeatureLink>
+                      </Link>
                     </Button>
                     <Button asChild variant="outline" size="sm">
                       <Link

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { CalendarClock, Trophy, Users } from "lucide-react";
 import { useQuery } from "convex/react";
-import { FeatureGate } from "@/components/auth/feature-gate";
 import { ContestEntryDialog } from "@/components/stories/contest-entry-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +15,6 @@ import {
 } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { FEATURES } from "@/lib/billing";
 import { daysLeft, toUiContest, type UiContest } from "@/lib/contests/query";
 import { formatNumber } from "@/lib/format";
 
@@ -79,19 +77,10 @@ export function OpenContests({ initial }: { initial: UiContest[] }) {
                     {formatNumber(contest.entries)} entries so far
                   </p>
                 </div>
-                <FeatureGate
-                  feature={FEATURES.writerDashboard}
-                  fallback={
-                    <Button asChild size="sm" variant="outline">
-                      <Link href="/pricing">Upgrade to enter</Link>
-                    </Button>
-                  }
-                >
-                  <ContestEntryDialog
-                    contestId={contest.id as Id<"contests">}
-                    contestName={contest.name}
-                  />
-                </FeatureGate>
+                <ContestEntryDialog
+                  contestId={contest.id as Id<"contests">}
+                  contestName={contest.name}
+                />
               </div>
             </CardContent>
           </Card>

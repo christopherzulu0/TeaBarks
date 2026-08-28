@@ -5,8 +5,6 @@ import { usePathname } from "next/navigation";
 import { Building2, LayoutDashboard, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useBillingAccess } from "@/components/auth/use-billing";
-import { FEATURES } from "@/lib/billing";
 import { cn } from "@/lib/utils";
 import { useMyWriterApplication } from "@/components/stories/writer-cta";
 import { UnreadCountBadge, MessagesUnreadBadge } from "@/components/notifications/unread-badge";
@@ -42,18 +40,9 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
 
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const billing = useBillingAccess();
   const { loading, application } = useMyWriterApplication();
-  const writeHref = billing.hrefFor(
-    FEATURES.writerDashboard,
-    "/stories/dashboard"
-  );
   const isActive = (href: string) =>
-    href === "/"
-      ? pathname === "/"
-      : href === "/pricing"
-        ? pathname.startsWith("/pricing")
-        : pathname.startsWith(href);
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   const personalItems = personalNav.flatMap((item) => {
     if (item.href !== "/stories/apply") return [item];
@@ -61,9 +50,8 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
     if (application?.status === "approved") {
       return [
         {
-          href: writeHref,
-          label:
-            writeHref === "/pricing" ? "Upgrade to write" : "Writer dashboard",
+          href: "/stories/dashboard",
+          label: "Writer dashboard",
           icon: LayoutDashboard,
         },
       ];

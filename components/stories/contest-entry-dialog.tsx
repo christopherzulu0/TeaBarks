@@ -6,7 +6,6 @@ import { SignInButton } from "@clerk/nextjs";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
-import { FeatureLink } from "@/components/auth/feature-link";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,7 +20,6 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { FEATURES } from "@/lib/billing";
 
 export function ContestEntryDialog({
   contestId,
@@ -150,13 +148,12 @@ export function ContestEntryDialog({
         ) : eligible.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             Publish a story with at least one part from the{" "}
-            <FeatureLink
-              feature={FEATURES.writerDashboard}
+            <Link
               href="/stories/dashboard"
               className="text-primary underline underline-offset-4"
             >
               writer dashboard
-            </FeatureLink>{" "}
+            </Link>{" "}
             before you can enter.
           </p>
         ) : (

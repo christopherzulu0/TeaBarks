@@ -32,8 +32,6 @@ import { useMyWriterApplication } from "@/components/stories/writer-cta";
 import { toUiBark } from "@/lib/barks/query";
 import { toUiCase } from "@/lib/cases/query";
 import { toUiStory } from "@/lib/stories/query";
-import { useBillingAccess } from "@/components/auth/use-billing";
-import { FEATURES } from "@/lib/billing";
 import { creators, topics } from "@/lib/data";
 
 const BARK_CODE_RE = /^(BRK)-(\d{4})-(\d{3,5})$/i;
@@ -48,12 +46,6 @@ export function CommandMenu() {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const router = useRouter();
-  const billing = useBillingAccess();
-  const createHref = billing.hrefFor(FEATURES.createBark, "/create");
-  const writeHref = billing.hrefFor(
-    FEATURES.writerDashboard,
-    "/stories/dashboard"
-  );
   const barkCode = normalizeBarkCode(query);
   const barkDocs = useQuery(api.barks.listPublic);
   const publishedBarks = barkDocs ? barkDocs.map(toUiBark) : [];
@@ -154,19 +146,15 @@ export function CommandMenu() {
               <CommandItem onSelect={() => go("/explore")}>
                 <Compass /> Explore
               </CommandItem>
-              <CommandItem onSelect={() => go(createHref)}>
-                <PenSquare />{" "}
-                {createHref === "/pricing" ? "Upgrade to create" : "Create Bark"}
+              <CommandItem onSelect={() => go("/create")}>
+                <PenSquare /> Create Bark
               </CommandItem>
               <CommandItem onSelect={() => go("/stories")}>
                 <BookOpen /> Stories
               </CommandItem>
               {writerLoading ? null : application?.status === "approved" ? (
-                <CommandItem onSelect={() => go(writeHref)}>
-                  <LayoutDashboard />{" "}
-                  {writeHref === "/pricing"
-                    ? "Upgrade to write"
-                    : "Writer dashboard"}
+                <CommandItem onSelect={() => go("/stories/dashboard")}>
+                  <LayoutDashboard /> Writer dashboard
                 </CommandItem>
               ) : application ? null : (
                 <CommandItem onSelect={() => go("/stories/apply")}>

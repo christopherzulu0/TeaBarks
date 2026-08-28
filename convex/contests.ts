@@ -3,7 +3,7 @@ import type { Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { isAdmin, requireAdmin } from "./lib/admin";
-import { clerkUserId, requireBillingFeature, requireIdentity } from "./lib/auth";
+import { clerkUserId, requireIdentity } from "./lib/auth";
 import { contestDocFields } from "./lib/validators";
 
 const contestDoc = v.object({
@@ -134,8 +134,7 @@ export const enter = mutation({
   },
   returns: v.object({ storyTitle: v.string() }),
   handler: async (ctx, args) => {
-    const { clerkId, writer, identity } = await requireApprovedWriter(ctx);
-    requireBillingFeature(identity, "writer_dashboard");
+    const { clerkId, writer } = await requireApprovedWriter(ctx);
     const contest = await ctx.db.get(args.contestId);
     if (!contest) throw new Error("Contest not found");
     if (contest.status !== "active") {

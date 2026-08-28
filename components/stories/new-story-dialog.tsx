@@ -7,8 +7,6 @@ import { Plus } from "lucide-react";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { useBillingAccess } from "@/components/auth/use-billing";
-import { FEATURES } from "@/lib/billing";
 import {
   Dialog,
   DialogContent,
@@ -26,8 +24,6 @@ import type { StoryGenre } from "@/lib/story-types";
 
 export function NewStoryDialog() {
   const router = useRouter();
-  const billing = useBillingAccess();
-  const allowed = billing.canUse(FEATURES.writerDashboard);
   const create = useMutation(api.stories.create);
   const [open, setOpen] = React.useState(false);
   const [title, setTitle] = React.useState("");
@@ -55,16 +51,6 @@ export function NewStoryDialog() {
       setSubmitting(false);
     }
   };
-
-  if (!allowed) {
-    return (
-      <Button asChild>
-        <Link href="/pricing">
-          <Plus className="size-4" /> New story
-        </Link>
-      </Button>
-    );
-  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

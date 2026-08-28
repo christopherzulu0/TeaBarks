@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Flag } from "lucide-react";
 import { useConvexAuth, useQuery } from "convex/react";
 import { AdminGate } from "@/components/admin/admin-gate";
-import { PermissionGate } from "@/components/auth/permission-gate";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -74,14 +73,9 @@ export function AdminReports() {
                       <Badge variant="secondary">{r.status}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <PermissionGate
-                        permission="org:reports:manage"
-                        hideWhenDenied
-                      >
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={r.href}>Review</Link>
-                        </Button>
-                      </PermissionGate>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={r.href}>Review</Link>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 );

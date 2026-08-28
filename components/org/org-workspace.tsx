@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { SsoStatusCard } from "@/components/org/sso-status-card";
 import { ActivityChart } from "@/components/org/activity-chart";
-import { PermissionGate } from "@/components/auth/permission-gate";
 import { PersonAvatar } from "@/components/person-avatar";
 import { BarkCard } from "@/components/bark-card";
 import { Badge } from "@/components/ui/badge";
@@ -91,7 +90,7 @@ export function OrgWorkspace() {
         </h1>
         <p className="text-sm text-muted-foreground">
           Organizations let newsrooms and research desks publish under a shared
-          name, invite members, and manage billing.
+          name and invite members.
         </p>
         <div className="flex justify-center">
           <CreateOrganization afterCreateOrganizationUrl="/org" />
@@ -136,38 +135,20 @@ export function OrgWorkspace() {
         })}
       </div>
 
-      <PermissionGate permission="org:sys_profile:manage" hideWhenDenied>
-        <Card className="overflow-hidden p-0">
-          <div className="p-4">
-            <h2 className="text-sm font-semibold">Organization profile</h2>
-            <p className="text-xs text-muted-foreground">
-              Members, domains, and billing live in Clerk.
-            </p>
-          </div>
-          <OrganizationProfile
-            routing="hash"
-            appearance={{
-              elements: { rootBox: "w-full", cardBox: "shadow-none w-full" },
-            }}
-          />
-        </Card>
-      </PermissionGate>
-
-      <PermissionGate permission="org:sys_billing:manage" hideWhenDenied>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Billing</CardTitle>
-            <CardDescription>
-              Seat and feature plans for this organization.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild>
-              <Link href="/pricing">Manage subscription</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </PermissionGate>
+      <Card className="overflow-hidden p-0">
+        <div className="p-4">
+          <h2 className="text-sm font-semibold">Organization profile</h2>
+          <p className="text-xs text-muted-foreground">
+            Members and domains live in Clerk.
+          </p>
+        </div>
+        <OrganizationProfile
+          routing="hash"
+          appearance={{
+            elements: { rootBox: "w-full", cardBox: "shadow-none w-full" },
+          }}
+        />
+      </Card>
 
       <SsoStatusCard />
 
