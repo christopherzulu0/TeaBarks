@@ -32,9 +32,10 @@ export function EvidenceCard({
   evidence: Evidence;
   className?: string;
 }) {
-  const Icon = typeIcons[evidence.type];
+  const Icon = (evidence.type && typeIcons[evidence.type]) || FileText;
   const addedByName =
-    evidence.addedByName || getPerson(evidence.addedById).name;
+    evidence.addedByName ||
+    (evidence.addedById ? getPerson(evidence.addedById).name : "Anonymous");
   const isVideo =
     evidence.type === "video" ||
     Boolean(evidence.contentType?.startsWith("video/"));
@@ -89,7 +90,11 @@ export function EvidenceCard({
             </video>
           )}
           <div className="flex flex-wrap items-center gap-2 pt-0.5 text-[11px] text-muted-foreground">
-            <span>{evidenceTypeMeta[evidence.type].label}</span>
+            <span>
+              {evidence.type && evidenceTypeMeta[evidence.type]?.label
+                ? evidenceTypeMeta[evidence.type].label
+                : evidence.type || "Evidence"}
+            </span>
             <span aria-hidden>·</span>
             <span>
               Added by {addedByName}, {formatDate(evidence.addedAt)}

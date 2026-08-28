@@ -23,9 +23,9 @@ export function sortBarksByViews(barks: Bark[]): Bark[] {
 }
 
 export function toUiBark(doc: Doc<"barks">): Bark {
-  const evidence: Evidence[] = doc.evidence.map((item, i) => {
+  const evidence: Evidence[] = (doc.evidence ?? []).map((item, i) => {
     const isTimestamp = item.type === "timestamp";
-    const looksLikeUrl = /^https?:\/\//i.test(item.url);
+    const looksLikeUrl = typeof item.url === "string" && /^https?:\/\//i.test(item.url);
     return {
       id: `${doc.code}-ev-${i}`,
       type: item.type,
@@ -37,7 +37,7 @@ export function toUiBark(doc: Doc<"barks">): Bark {
       contentType: item.contentType,
       addedById: doc.authorClerkId,
       addedByName: doc.authorName,
-      addedAt: new Date(doc.publishedAt).toISOString(),
+      addedAt: doc.publishedAt ? new Date(doc.publishedAt).toISOString() : new Date().toISOString(),
       verified: false,
     };
   });
@@ -45,22 +45,22 @@ export function toUiBark(doc: Doc<"barks">): Bark {
   return {
     id: doc._id,
     code: doc.code,
-    type: doc.type as BarkType,
-    title: doc.title,
+    type: (doc.type || "mixed") as BarkType,
+    title: doc.title || "Untitled Bark",
     authorId: doc.authorClerkId,
     sourceId: `convex-source:${doc.code}`,
-    publishedAt: new Date(doc.publishedAt).toISOString(),
-    excerpt: doc.excerpt,
-    content: doc.body
+    publishedAt: doc.publishedAt ? new Date(doc.publishedAt).toISOString() : new Date().toISOString(),
+    excerpt: doc.excerpt || "",
+    content: (doc.body || "")
       .split(/\n{2,}/)
       .filter(Boolean)
       .map((text) => ({ kind: "paragraph" as const, text })),
     evidence,
-    evidenceRating: doc.evidenceRating,
-    replyCount: doc.replyCount,
-    upvotes: doc.upvotes,
-    saves: doc.saves,
-    views: doc.views,
+    evidenceRating: doc.evidenceRating ?? 0,
+    replyCount: doc.replyCount ?? 0,
+    upvotes: doc.upvotes ?? 0,
+    saves: doc.saves ?? 0,
+    views: doc.views ?? 0,
     topics: [],
     country: doc.country ?? "",
     authorName: doc.authorName,

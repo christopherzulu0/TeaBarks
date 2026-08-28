@@ -62,13 +62,23 @@ export async function publishBark(input: PublishBarkInput): Promise<{ code: stri
 }
 
 export async function listPublicBarks(): Promise<Bark[]> {
-  const docs = await fetchQuery(api.barks.listPublic, {});
-  return docs.map(toUiBark);
+  try {
+    const docs = await fetchQuery(api.barks.listPublic, {});
+    return docs.map(toUiBark);
+  } catch (error) {
+    console.error("Failed to list public barks:", error);
+    return [];
+  }
 }
 
 export async function listPublicBarksByCountry(country: string): Promise<Bark[]> {
-  const docs = await fetchQuery(api.barks.listPublicByCountry, { country });
-  return docs.map(toUiBark);
+  try {
+    const docs = await fetchQuery(api.barks.listPublicByCountry, { country });
+    return docs.map(toUiBark);
+  } catch (error) {
+    console.error("Failed to list public barks by country:", error);
+    return [];
+  }
 }
 
 export type CountryStat = {
@@ -78,17 +88,32 @@ export type CountryStat = {
 };
 
 export async function listCountryStats(): Promise<CountryStat[]> {
-  return await fetchQuery(api.barks.countryStats, {});
+  try {
+    return await fetchQuery(api.barks.countryStats, {});
+  } catch (error) {
+    console.error("Failed to list country stats:", error);
+    return [];
+  }
 }
 
 export async function listPublicSources(): Promise<Source[]> {
-  const docs = await fetchQuery(api.barks.listPublicSources, {});
-  return docs.map(toUiSource);
+  try {
+    const docs = await fetchQuery(api.barks.listPublicSources, {});
+    return docs.map(toUiSource);
+  } catch (error) {
+    console.error("Failed to list public sources:", error);
+    return [];
+  }
 }
 
 export async function getBarkByCodeAction(code: string): Promise<Bark | null> {
-  const doc = await fetchQuery(api.barks.getByCode, { code });
-  return doc ? toUiBark(doc) : null;
+  try {
+    const doc = await fetchQuery(api.barks.getByCode, { code });
+    return doc ? toUiBark(doc) : null;
+  } catch (error) {
+    console.error("Failed to get bark by code:", error);
+    return null;
+  }
 }
 
 export async function listMyBarks(): Promise<Bark[]> {

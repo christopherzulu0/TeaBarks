@@ -40,7 +40,7 @@ import {
 } from "@/components/ui/tabs";
 import { getBarkByCodeAction } from "@/app/actions/barks";
 import { youtubeThumbnailUrl } from "@/lib/detect-source";
-import { getCreator, getSource, getUser, repliesForBark } from "@/lib/data";
+import { getCreator, getSource, getUser, getBarkByCode, repliesForBark } from "@/lib/data";
 import { formatDate, formatNumber } from "@/lib/format";
 import { platformMeta } from "@/lib/meta";
 import type { Bark, EvidenceType, Source, User } from "@/lib/types";
@@ -50,7 +50,13 @@ export function generateStaticParams() {
 }
 
 async function resolveBark(code: string): Promise<Bark | undefined> {
-  return (await getBarkByCodeAction(code)) ?? undefined;
+  try {
+    const live = await getBarkByCodeAction(code);
+    if (live) return live;
+  } catch (err) {
+    console.error("Failed to fetch live bark:", err);
+  }
+  return getBarkByCode(code);
 }
 
 export async function generateMetadata(
@@ -263,7 +269,9 @@ export default async function BarkPage(props: PageProps<"/barks/[code]">) {
                       platform={source.platform}
                       className="size-3.5"
                     />
-                    {platformMeta[source.platform].label}
+                    {source.platform && platformMeta[source.platform]?.label
+                      ? platformMeta[source.platform].label
+                      : source.platform}
                     <span aria-hidden>·</span>
                     {creator.hasTeaBarksProfile ? (
                       <Link

@@ -10,7 +10,10 @@ export function BarkTypeBadge({
   type: BarkType;
   className?: string;
 }) {
-  const meta = barkTypeMeta[type];
+  const meta = barkTypeMeta[type] ?? {
+    label: type || "Bark",
+    badgeClass: "bg-muted text-muted-foreground border-border",
+  };
   return (
     <Badge
       variant="outline"
