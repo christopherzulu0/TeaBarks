@@ -29,9 +29,7 @@ import { formatNumber, timeAgo } from "@/lib/format";
 import { totalReadingMinutes } from "@/lib/stories/query";
 import { getGenreMeta, storyStatusMeta } from "@/lib/story-meta";
 
-export function generateStaticParams() {
-  return [];
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(
   props: PageProps<"/stories/[slug]">

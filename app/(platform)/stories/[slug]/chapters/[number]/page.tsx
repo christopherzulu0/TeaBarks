@@ -3,11 +3,7 @@ import { notFound } from "next/navigation";
 import { getPublicChapterAction } from "@/app/actions/stories";
 import { ChapterReader } from "@/components/stories/chapter-reader";
 
-export const dynamicParams = true;
-
-export function generateStaticParams() {
-  return [];
-}
+export const dynamic = "force-dynamic";
 
 async function loadChapter(slug: string, rawNumber: string) {
   const number = Number(rawNumber);

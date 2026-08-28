@@ -5,9 +5,7 @@ import { listPublicBarks } from "@/app/actions/barks";
 import { listCases } from "@/app/actions/cases";
 import { getCreatorByHandleAction } from "@/app/actions/creators";
 
-export function generateStaticParams() {
-  return [];
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(
   props: PageProps<"/creators/[handle]">

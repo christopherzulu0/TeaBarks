@@ -4,9 +4,7 @@ import { getCaseByCodeAction } from "@/app/actions/cases";
 import { getCreatorByHandleAction } from "@/app/actions/creators";
 import { CaseFile } from "@/components/cases/case-file";
 
-export function generateStaticParams() {
-  return [];
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(
   props: PageProps<"/cases/[code]">

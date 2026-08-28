@@ -45,9 +45,7 @@ import { formatDate, formatNumber } from "@/lib/format";
 import { platformMeta } from "@/lib/meta";
 import type { Bark, EvidenceType, Source, User } from "@/lib/types";
 
-export function generateStaticParams() {
-  return [];
-}
+export const dynamic = "force-dynamic";
 
 async function resolveBark(code: string): Promise<Bark | undefined> {
   try {
