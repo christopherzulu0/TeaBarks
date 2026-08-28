@@ -1,0 +1,132 @@
+import Link from "next/link";
+import type { ReactNode } from "react";
+import { MessageSquare, Scale } from "lucide-react";
+import { EvidenceRating } from "@/components/evidence-rating";
+import { PersonAvatar } from "@/components/person-avatar";
+import { SourceThumb } from "@/components/source-thumb";
+import { VerifiedBadge } from "@/components/verified-badge";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { getCreator } from "@/lib/data";
+import { formatNumber } from "@/lib/format";
+import { platformMeta } from "@/lib/meta";
+import type { Source } from "@/lib/types";
+import { cn } from "@/lib/utils";
+
+function SourceLink({
+  href,
+  external,
+  className,
+  children,
+}: {
+  href: string;
+  external: boolean;
+  className?: string;
+  children: ReactNode;
+}) {
+  if (external) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className={className}
+      >
+        {children}
+      </a>
+    );
+  }
+  return (
+    <Link href={href} className={className}>
+      {children}
+    </Link>
+  );
+}
+
+export function SourceCard({
+  source,
+  className,
+}: {
+  source: Source;
+  className?: string;
+}) {
+  const creator = source.creatorId
+    ? getCreator(source.creatorId)
+    : undefined;
+  const creatorName = creator?.name ?? source.creatorName;
+  const creatorHref = creator
+    ? `/creators/${creator.handle}`
+    : undefined;
+  const mediaHref = creatorHref ?? (source.url || "#");
+  const mediaExternal = !creatorHref && Boolean(source.url);
+
+  return (
+    <Card className={cn("gap-0 overflow-hidden p-0", className)}>
+      <SourceLink
+        href={mediaHref}
+        external={mediaExternal}
+        className="block focus-visible:outline-2 focus-visible:outline-ring"
+      >
+        <SourceThumb source={source} className="aspect-video w-full rounded-none" />
+      </SourceLink>
+      <div className="flex flex-col gap-2.5 p-4">
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-[11px]">
+            {platformMeta[source.platform].label}
+          </Badge>
+          {source.category &&
+          source.category !== platformMeta[source.platform].label ? (
+            <Badge variant="outline" className="text-[11px]">
+              {source.category}
+            </Badge>
+          ) : null}
+        </div>
+        <SourceLink
+          href={mediaHref}
+          external={mediaExternal}
+          className="line-clamp-2 font-semibold leading-snug tracking-tight text-sm hover:underline"
+        >
+          {source.title}
+        </SourceLink>
+        {creatorName ? (
+          creatorHref ? (
+            <Link
+              href={creatorHref}
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <PersonAvatar
+                id={creator?.id ?? source.id}
+                name={creatorName}
+                className="size-5"
+              />
+              <span className="truncate">{creatorName}</span>
+              {creator?.verified && <VerifiedBadge className="size-3.5" />}
+            </Link>
+          ) : (
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              <PersonAvatar
+                id={source.id}
+                name={creatorName}
+                className="size-5"
+              />
+              <span className="truncate">{creatorName}</span>
+            </p>
+          )
+        ) : null}
+        <div className="flex items-center justify-between border-t pt-2.5 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1">
+            <MessageSquare className="size-3.5" aria-hidden />
+            {formatNumber(source.barkCount)} Barks
+          </span>
+          {source.caseCount > 0 && (
+            <span className="inline-flex items-center gap-1">
+              <Scale className="size-3.5" aria-hidden />
+              {source.caseCount} {source.caseCount === 1 ? "Case" : "Cases"}
+            </span>
+          )}
+          <EvidenceRating rating={source.evidenceRating} showLabel={false} />
+        </div>
+      </div>
+    </Card>
+  );
+}

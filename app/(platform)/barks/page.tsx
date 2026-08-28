@@ -1,0 +1,23 @@
+import type { Metadata } from "next";
+import { listPublicBarks } from "@/app/actions/barks";
+import { BarksList } from "@/components/barks/barks-list";
+
+export const metadata: Metadata = {
+  title: "Barks",
+};
+
+export default async function BarksPage() {
+  const barks = await listPublicBarks();
+
+  return (
+    <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Barks</h1>
+        <p className="text-sm text-muted-foreground">
+          Evidence-based responses to public content, newest first.
+        </p>
+      </div>
+      <BarksList initialBarks={barks} />
+    </div>
+  );
+}
