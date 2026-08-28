@@ -499,13 +499,13 @@ export function ProfileView({
                     size="default"
                   />
                 )}
-                <Button
-                  variant="outline"
-                  className="h-10 w-full sm:h-8 sm:w-auto"
-                  onClick={shareProfile}
-                >
-                  <Share2 className="size-4" /> Share
-                </Button>
+                {/*<Button*/}
+                {/*  variant="outline"*/}
+                {/*  className="h-10 w-full sm:h-8 sm:w-auto"*/}
+                {/*  onClick={shareProfile}*/}
+                {/*>*/}
+                {/*  <Share2 className="size-4" /> Share*/}
+                {/*</Button>*/}
               </div>
               )}
             </div>

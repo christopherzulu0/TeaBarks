@@ -118,21 +118,21 @@ export function TopNav() {
             </SignUpButton>
           </Show>
           <Show when="signed-in">
-            <div className="hidden lg:flex">
-              <OrganizationSwitcher
-                hidePersonal
-                afterCreateOrganizationUrl="/org"
-                afterSelectOrganizationUrl="/org"
-                afterLeaveOrganizationUrl="/"
-                appearance={{
-                  elements: {
-                    rootBox: "flex items-center",
-                    organizationSwitcherTrigger:
-                      "rounded-md border border-border px-2 py-1",
-                  },
-                }}
-              />
-            </div>
+            {/*<div className="hidden lg:flex">*/}
+            {/*  <OrganizationSwitcher*/}
+            {/*    hidePersonal*/}
+            {/*    afterCreateOrganizationUrl="/org"*/}
+            {/*    afterSelectOrganizationUrl="/org"*/}
+            {/*    afterLeaveOrganizationUrl="/"*/}
+            {/*    appearance={{*/}
+            {/*      elements: {*/}
+            {/*        rootBox: "flex items-center",*/}
+            {/*        organizationSwitcherTrigger:*/}
+            {/*          "rounded-md border border-border px-2 py-1",*/}
+            {/*      },*/}
+            {/*    }}*/}
+            {/*  />*/}
+            {/*</div>*/}
             <UserButton>
               <UserButton.MenuItems>
                 <UserButton.Link
@@ -145,16 +145,16 @@ export function TopNav() {
                   label="Saved Barks"
                   labelIcon={<Bookmark className="size-4" />}
                 />
-                <UserButton.Link
-                  href="/org"
-                  label="Organization"
-                  labelIcon={<Building2 className="size-4" />}
-                />
-                <UserButton.Link
-                  href="/settings"
-                  label="Settings"
-                  labelIcon={<Settings className="size-4" />}
-                />
+                {/*<UserButton.Link*/}
+                {/*  href="/org"*/}
+                {/*  label="Organization"*/}
+                {/*  labelIcon={<Building2 className="size-4" />}*/}
+                {/*/>*/}
+                {/*<UserButton.Link*/}
+                {/*  href="/settings"*/}
+                {/*  label="Settings"*/}
+                {/*  labelIcon={<Settings className="size-4" />}*/}
+                {/*/>*/}
               </UserButton.MenuItems>
             </UserButton>
           </Show>
