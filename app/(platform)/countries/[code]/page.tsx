@@ -19,9 +19,7 @@ import { listCasesByCountry } from "@/app/actions/cases";
 import { countries } from "@/lib/data";
 import { formatNumber } from "@/lib/format";
 
-export function generateStaticParams() {
-  return countries.map((c) => ({ code: c.code }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(props: {
   params: Promise<{ code: string }>;

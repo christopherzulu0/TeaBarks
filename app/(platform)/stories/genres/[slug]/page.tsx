@@ -8,9 +8,7 @@ import { EmptyState } from "@/components/empty-state";
 import { genreMeta } from "@/lib/story-meta";
 import type { StoryGenre } from "@/lib/story-types";
 
-export function generateStaticParams() {
-  return Object.keys(genreMeta).map((slug) => ({ slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(
   props: PageProps<"/stories/genres/[slug]">

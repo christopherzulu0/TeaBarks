@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   title: "Accountability Cases",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function CasesPage() {
   const cases = await listCases();
 

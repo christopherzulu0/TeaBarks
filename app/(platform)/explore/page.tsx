@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   title: "Explore",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function ExplorePage() {
   const [publishedCases, publishedBarks, publishedSources] = await Promise.all([
     listCases(),

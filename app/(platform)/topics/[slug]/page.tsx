@@ -12,9 +12,7 @@ import { caseCategoryMeta } from "@/lib/meta";
 import { getTopic, isCaseCategory, topics } from "@/lib/topics";
 import { formatNumber } from "@/lib/format";
 
-export function generateStaticParams() {
-  return topics.map((t) => ({ slug: t.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(
   props: PageProps<"/topics/[slug]">

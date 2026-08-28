@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   title: "Search",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function SearchPage() {
   const [cases, barks] = await Promise.all([listCases(), listPublicBarks()]);
 

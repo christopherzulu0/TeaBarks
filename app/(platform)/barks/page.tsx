@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   title: "Barks",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function BarksPage() {
   const barks = await listPublicBarks();
 

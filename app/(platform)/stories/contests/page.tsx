@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   title: "Writing Contests",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function ContestsPage() {
   const [active, past] = await Promise.all([
     listActiveContests(),

@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   title: "Topics",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function TopicsPage() {
   const stats = await listCaseCategoryStats();
   const bySlug = new Map(stats.map((row) => [row.slug, row.caseCount]));

@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   title: "Creators",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function CreatorsPage() {
   const creators = await listApprovedCreators();
 

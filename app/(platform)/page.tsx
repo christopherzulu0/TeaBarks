@@ -19,6 +19,8 @@ import { sortBarksByPublishedAt } from "@/lib/barks/query";
 import { currentUser, topics } from "@/lib/data";
 import { formatNumber } from "@/lib/format";
 
+export const dynamic = "force-dynamic";
+
 function Hero() {
   return (
     <section className="relative overflow-hidden border-b bg-gradient-to-b from-primary/[0.07] via-background to-background">
