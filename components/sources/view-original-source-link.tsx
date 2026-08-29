@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { Copy, ExternalLink, Link2, Play } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -22,80 +23,58 @@ function primaryActionLabel(platform: SourcePlatform) {
 const linkClassName =
   "inline-flex items-center gap-1 text-xs text-primary hover:underline";
 
-export function ViewOriginalSourceLink({
+function MobileSourceSheet({
   url,
   platform,
-  className,
+  onClose,
 }: {
   url: string;
   platform: SourcePlatform;
-  className?: string;
+  onClose: () => void;
 }) {
-  const dialogRef = React.useRef<HTMLDialogElement>(null);
   const primaryLabel = primaryActionLabel(platform);
 
-  const closeDialog = () => {
-    dialogRef.current?.close();
-  };
-
-  const openDialog = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const dialog = dialogRef.current;
-    if (!dialog || dialog.open) return;
-    dialog.showModal();
-  };
+  React.useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
 
   const openExternal = () => {
     window.open(url, "_blank", "noopener,noreferrer");
-    closeDialog();
+    onClose();
   };
 
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied");
-      closeDialog();
+      onClose();
     } catch {
       toast.error("Couldn't copy. Select and copy it manually.");
     }
   };
 
-  return (
-    <>
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={cn(linkClassName, "hidden lg:inline-flex", className)}
-      >
-        View original source{" "}
-        <ExternalLink className="size-3" aria-hidden />
-      </a>
-
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] flex flex-col justify-end"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="view-source-title"
+    >
       <button
         type="button"
-        className={cn(linkClassName, "touch-manipulation lg:hidden", className)}
-        onClick={openDialog}
-      >
-        View original source{" "}
-        <ExternalLink className="size-3" aria-hidden />
-      </button>
-
-      <dialog
-        ref={dialogRef}
-        className={cn(
-          "fixed bottom-0 left-0 right-0 z-[100] m-0 w-full max-w-full",
-          "max-h-[85dvh] overflow-y-auto rounded-t-2xl border-t bg-popover p-4 shadow-lg",
-          "pb-[max(1rem,env(safe-area-inset-bottom))]",
-          "backdrop:bg-black/40 lg:hidden",
-          "open:animate-in open:slide-in-from-bottom-10"
-        )}
-        onClick={(event) => {
-          if (event.target === dialogRef.current) closeDialog();
-        }}
-      >
-        <h2 className="pr-8 text-base font-medium text-foreground">
+        className="absolute inset-0 bg-black/40"
+        aria-label="Dismiss"
+        onClick={onClose}
+      />
+      <div className="relative z-10 max-h-[85dvh] overflow-y-auto rounded-t-2xl border-t bg-popover p-4 shadow-lg pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <h2
+          id="view-source-title"
+          className="text-base font-medium text-foreground"
+        >
           Open external source?
         </h2>
         <p className="mt-2 break-all text-left text-xs leading-relaxed text-muted-foreground">
@@ -130,12 +109,63 @@ export function ViewOriginalSourceLink({
             variant="ghost"
             size="lg"
             className="h-11 w-full"
-            onClick={closeDialog}
+            onClick={onClose}
           >
             Cancel
           </Button>
         </div>
-      </dialog>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+export function ViewOriginalSourceLink({
+  url,
+  platform,
+  className,
+}: {
+  url: string;
+  platform: SourcePlatform;
+  className?: string;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const close = React.useCallback(() => setOpen(false), []);
+
+  return (
+    <>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cn(linkClassName, "hidden lg:inline-flex", className)}
+      >
+        View original source{" "}
+        <ExternalLink className="size-3" aria-hidden />
+      </a>
+
+      <button
+        type="button"
+        className={cn(linkClassName, "touch-manipulation lg:hidden", className)}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          setOpen(true);
+        }}
+      >
+        View original source{" "}
+        <ExternalLink className="size-3" aria-hidden />
+      </button>
+
+      {open && mounted ? (
+        <MobileSourceSheet url={url} platform={platform} onClose={close} />
+      ) : null}
     </>
   );
 }
