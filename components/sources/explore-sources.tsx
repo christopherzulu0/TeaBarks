@@ -29,7 +29,11 @@ export function ExploreSources({
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {sources.map((source) => (
-        <SourceCard key={source.id} source={source} />
+        <SourceCard
+          key={source.id}
+          source={source}
+          mobileSourceLinkActions
+        />
       ))}
     </div>
   );

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { MessageSquare, Scale } from "lucide-react";
 import { EvidenceRating } from "@/components/evidence-rating";
 import { PersonAvatar } from "@/components/person-avatar";
+import { ViewOriginalSourceLink } from "@/components/sources/view-original-source-link";
 import { SourceThumb } from "@/components/source-thumb";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { Badge } from "@/components/ui/badge";
@@ -46,9 +47,12 @@ function SourceLink({
 export function SourceCard({
   source,
   className,
+  mobileSourceLinkActions = false,
 }: {
   source: Source;
   className?: string;
+  /** Mobile: inline watch/copy panel instead of navigating straight to the URL. */
+  mobileSourceLinkActions?: boolean;
 }) {
   const creator = source.creatorId
     ? getCreator(source.creatorId)
@@ -59,16 +63,35 @@ export function SourceCard({
     : undefined;
   const mediaHref = creatorHref ?? (source.url || "#");
   const mediaExternal = !creatorHref && Boolean(source.url);
+  const deferExternalOnMobile =
+    mobileSourceLinkActions && mediaExternal && Boolean(source.url);
+
+  const thumb = (
+    <SourceThumb source={source} className="aspect-video w-full rounded-none" />
+  );
 
   return (
     <Card className={cn("gap-0 overflow-hidden p-0", className)}>
-      <SourceLink
-        href={mediaHref}
-        external={mediaExternal}
-        className="block focus-visible:outline-2 focus-visible:outline-ring"
-      >
-        <SourceThumb source={source} className="aspect-video w-full rounded-none" />
-      </SourceLink>
+      {deferExternalOnMobile ? (
+        <>
+          <div className="block lg:hidden">{thumb}</div>
+          <SourceLink
+            href={mediaHref}
+            external
+            className="hidden focus-visible:outline-2 focus-visible:outline-ring lg:block"
+          >
+            {thumb}
+          </SourceLink>
+        </>
+      ) : (
+        <SourceLink
+          href={mediaHref}
+          external={mediaExternal}
+          className="block focus-visible:outline-2 focus-visible:outline-ring"
+        >
+          {thumb}
+        </SourceLink>
+      )}
       <div className="flex flex-col gap-2.5 p-4">
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="text-[11px]">
@@ -81,13 +104,34 @@ export function SourceCard({
             </Badge>
           ) : null}
         </div>
-        <SourceLink
-          href={mediaHref}
-          external={mediaExternal}
-          className="line-clamp-2 font-semibold leading-snug tracking-tight text-sm hover:underline"
-        >
-          {source.title}
-        </SourceLink>
+        {deferExternalOnMobile ? (
+          <>
+            <p className="line-clamp-2 font-semibold leading-snug tracking-tight text-sm lg:hidden">
+              {source.title}
+            </p>
+            <SourceLink
+              href={mediaHref}
+              external
+              className="line-clamp-2 hidden font-semibold leading-snug tracking-tight text-sm hover:underline lg:block"
+            >
+              {source.title}
+            </SourceLink>
+          </>
+        ) : (
+          <SourceLink
+            href={mediaHref}
+            external={mediaExternal}
+            className="line-clamp-2 font-semibold leading-snug tracking-tight text-sm hover:underline"
+          >
+            {source.title}
+          </SourceLink>
+        )}
+        {mobileSourceLinkActions && source.url ? (
+          <ViewOriginalSourceLink
+            url={source.url}
+            platform={source.platform}
+          />
+        ) : null}
         {creatorName ? (
           creatorHref ? (
             <Link
