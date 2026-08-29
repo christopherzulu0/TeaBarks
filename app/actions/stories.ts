@@ -1,8 +1,8 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
+import { getConvexClerkToken } from "@/lib/convex-clerk";
 import {
   toMineStory,
   toUiChapter,
@@ -13,18 +13,6 @@ import {
 } from "@/lib/stories/query";
 import type { Chapter } from "@/lib/story-types";
 import type { StoryGenre } from "@/lib/story-types";
-
-async function convexToken() {
-  const { userId, getToken } = await auth();
-  if (!userId) throw new Error("Sign in to continue");
-  const token = await getToken({ template: "convex" });
-  if (!token) {
-    throw new Error(
-      "Missing Convex JWT. Create a Clerk JWT template named convex."
-    );
-  }
-  return token;
-}
 
 export async function listPublicStories(): Promise<UiStory[]> {
   const docs = await fetchQuery(api.stories.listPublic, {});
@@ -71,7 +59,7 @@ export async function getPublicChapterAction(
 
 export async function getMyStoriesAction(): Promise<MineStory[]> {
   try {
-    const token = await convexToken();
+    const token = await getConvexClerkToken("view your stories");
     const docs = await fetchQuery(api.stories.listMine, {}, { token });
     return docs.map(toMineStory);
   } catch {
@@ -88,7 +76,7 @@ export async function getMyStoryBySlugAction(slug: string): Promise<{
   nextNumber: number;
 } | null> {
   try {
-    const token = await convexToken();
+    const token = await getConvexClerkToken("view your stories");
     const doc = await fetchQuery(api.stories.getMineBySlug, { slug }, { token });
     if (!doc) return null;
     const nextNumber = doc.draft

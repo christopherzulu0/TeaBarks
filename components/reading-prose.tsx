@@ -19,3 +19,5 @@ export const ReadingProse = React.forwardRef<
     />
   );
 });
+
+ReadingProse.displayName = "ReadingProse";

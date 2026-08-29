@@ -278,9 +278,12 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
               : "Your evidence-based response is now live.",
         }
       );
-      router.push(
-        variables.status === "draft" ? "/create" : `/barks/${result.code}`
-      );
+      if (variables.status === "draft") {
+        router.replace("/create");
+        return;
+      }
+      router.replace(`/barks/${result.code}`);
+      router.refresh();
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : "Could not publish");

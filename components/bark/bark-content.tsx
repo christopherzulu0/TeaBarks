@@ -1,3 +1,5 @@
+"use client";
+
 import { EvidenceCard } from "@/components/evidence-card";
 import { ReadingProse } from "@/components/reading-prose";
 import type { ContentBlock, Evidence } from "@/lib/types";

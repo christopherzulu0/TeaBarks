@@ -95,7 +95,7 @@ export function SourceCard({
       <div className="flex flex-col gap-2.5 p-4">
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="text-[11px]">
-            {platformMeta[source.platform].label}
+            {platformMeta[source.platform]?.label ?? source.platform}
           </Badge>
           {source.category &&
           source.category !== platformMeta[source.platform].label ? (

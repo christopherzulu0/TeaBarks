@@ -1,10 +1,11 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { toUiBark } from "@/lib/barks/query";
+import { getConvexClerkToken } from "@/lib/convex-clerk";
 import { toUiSource } from "@/lib/sources/query";
 import type { Bark, BarkType, EvidenceType, Source, SourcePlatform } from "@/lib/types";
 
@@ -28,20 +29,8 @@ export type PublishBarkInput = {
   }[];
 };
 
-async function convexToken() {
-  const { userId, getToken } = await auth();
-  if (!userId) throw new Error("Sign in to publish");
-  const token = await getToken({ template: "convex" });
-  if (!token) {
-    throw new Error(
-      "Missing Convex JWT. Create a Clerk JWT template named convex."
-    );
-  }
-  return token;
-}
-
 export async function publishBark(input: PublishBarkInput): Promise<{ code: string }> {
-  const token = await convexToken();
+  const token = await getConvexClerkToken("publish a bark");
   return await fetchMutation(
     api.barks.create,
     {
@@ -107,6 +96,7 @@ export async function listPublicSources(): Promise<Source[]> {
 }
 
 export async function getBarkByCodeAction(code: string): Promise<Bark | null> {
+  noStore();
   const normalized = code.trim().toUpperCase();
   if (!normalized) return null;
   try {
@@ -120,7 +110,7 @@ export async function getBarkByCodeAction(code: string): Promise<Bark | null> {
 
 export async function listMyBarks(): Promise<Bark[]> {
   try {
-    const token = await convexToken();
+    const token = await getConvexClerkToken("view your barks");
     const docs = await fetchQuery(api.barks.listMine, {}, { token });
     return docs.map(toUiBark);
   } catch {

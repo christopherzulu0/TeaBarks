@@ -38,6 +38,6 @@ export function PlatformIcon({
   platform: SourcePlatform;
   className?: string;
 }) {
-  const Icon = icons[platform];
+  const Icon = icons[platform] ?? FileText;
   return <Icon className={cn("size-4", className)} aria-hidden />;
 }

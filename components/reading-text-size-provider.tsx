@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   defaultReadingTextSize,
   isReadingTextSize,
+  readingTextSizeClass,
   type ReadingTextSize,
 } from "@/lib/reading-text-size";
 import { readJson, STORAGE_KEYS, writeJson } from "@/lib/storage";
@@ -20,6 +21,11 @@ const ReadingTextSizeContext = React.createContext<ReadingTextSizeContextValue>(
 
 export function useReadingTextSize() {
   return React.useContext(ReadingTextSizeContext);
+}
+
+export function useReadingTextClass() {
+  const { textSize } = useReadingTextSize();
+  return readingTextSizeClass[textSize];
 }
 
 export function ReadingTextSizeProvider({

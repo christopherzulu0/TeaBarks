@@ -1,3 +1,5 @@
+"use client";
+
 import type { ContentBlock } from "@/lib/types";
 import { ReadingProse } from "@/components/reading-prose";
 
