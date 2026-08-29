@@ -26,7 +26,7 @@ export interface NavItem {
 export const mainNav: NavItem[] = [
   { href: "/", label: "Home", icon: Home },
   { href: "/explore", label: "Explore", icon: Compass },
-  { href: "/barks", label: "Barks", icon: FileText },
+  { href: "/barks", label: "Reactions", icon: FileText },
   { href: "/cases", label: "Accountability Cases", icon: Scale },
   { href: "/stories", label: "Stories", icon: BookOpen },
   { href: "/topics", label: "Topics", icon: Hash },

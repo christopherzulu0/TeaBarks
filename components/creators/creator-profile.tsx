@@ -115,7 +115,7 @@ export function CreatorProfile({
                         variant="outline"
                         className="bg-agree/10 text-agree border-agree/30"
                       >
-                        Active on TeaBarks
+                        Active on TypeReact
                       </Badge>
                     ) : (
                       <Badge variant="outline">Unclaimed profile</Badge>
@@ -166,7 +166,7 @@ export function CreatorProfile({
                   </p>
                   <p className="text-xs text-muted-foreground">
                     Claim this profile to verify your identity and respond
-                    officially to barks and cases.
+                    officially to reactions and cases.
                   </p>
                 </div>
                 <Button asChild size="sm" className="shrink-0">
@@ -184,7 +184,7 @@ export function CreatorProfile({
                     Library ({sources.length})
                   </TabsTrigger>
                   <TabsTrigger value="barks">
-                    Barks ({barksAbout.length})
+                    Reactions ({barksAbout.length})
                   </TabsTrigger>
                   <TabsTrigger value="cases">
                     Cases ({cases.length})
@@ -194,11 +194,11 @@ export function CreatorProfile({
                 <TabsContent value="library" className="mt-4 space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm text-muted-foreground">
-                      Indexed public content under discussion on TeaBarks.
+                      Indexed public content under discussion on TypeReact.
                     </p>
                     <Button asChild size="sm" variant="outline">
                       <Link href="/create">
-                        Bark about a source
+                        React to a source
                       </Link>
                     </Button>
                   </div>
@@ -221,11 +221,11 @@ export function CreatorProfile({
                   {barkSort.length === 0 ? (
                     <EmptyState
                       icon={MessageSquareText}
-                      title="No barks yet"
+                      title="No reactions yet"
                       description="Be the first to write an evidence-based response to this creator's content."
                       action={
                         <Button asChild size="sm">
-                          <Link href="/create">Create a Bark</Link>
+                          <Link href="/create">Create Reaction</Link>
                         </Button>
                       }
                     />
@@ -257,7 +257,7 @@ export function CreatorProfile({
               </Tabs>
             </div>
 
-            <aside className="space-y-4 lg:sticky lg:top-20 lg:h-fit">
+            <aside className="space-y-4 lg:sticky lg:top-24 lg:h-fit">
               <Card className="gap-0 p-0">
                 <div className="space-y-4 p-4">
                   <h2 className="text-sm font-semibold">Profile snapshot</h2>
@@ -278,7 +278,7 @@ export function CreatorProfile({
                     </div>
                     <div className="rounded-lg bg-muted/40 p-3">
                       <dt className="text-xs text-muted-foreground">
-                        Barks received
+                        Reactions received
                       </dt>
                       <dd className="text-lg font-bold tabular-nums">
                         {formatNumber(creator.totalBarksReceived)}
@@ -308,7 +308,7 @@ export function CreatorProfile({
                     </div>
                     <Progress value={creator.responseRate} aria-label="Response rate" />
                     <p className="text-xs text-muted-foreground">
-                      How often this creator officially replies to barks and
+                      How often this creator officially replies to reactions and
                       cases about them.
                     </p>
                   </div>
@@ -359,7 +359,7 @@ export function CreatorProfile({
                           {country.name}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {formatNumber(country.barkCount)} local barks
+                          {formatNumber(country.barkCount)} local reactions
                         </span>
                       </span>
                     </Link>
@@ -373,7 +373,7 @@ export function CreatorProfile({
                   <div className="grid gap-2">
                     <Button asChild variant="secondary" size="sm">
                       <Link href="/create">
-                        Start a Bark
+                        Start a Reaction
                       </Link>
                     </Button>
                     <Button asChild variant="outline" size="sm">

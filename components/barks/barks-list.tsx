@@ -26,8 +26,8 @@ const types: { value: BarkType | "all"; label: string }[] = [
 const empty = (
   <EmptyState
     icon={MessageSquare}
-    title="No published barks yet"
-    description="When someone publishes a bark, it will show up here."
+    title="No published reactions yet"
+    description="When someone publishes a reaction, it will show up here."
   />
 );
 

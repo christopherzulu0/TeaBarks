@@ -21,6 +21,7 @@ const profileLabel = {
   approved: "Claimed",
   pending: "Pending",
   rejected: "Rejected",
+  unclaimed: "Unclaimed",
 } as const;
 
 export function AdminCreators() {
@@ -45,7 +46,7 @@ export function AdminCreators() {
               <TableRow>
                 <TableHead>Creator</TableHead>
                 <TableHead className="hidden sm:table-cell">Profile</TableHead>
-                <TableHead>Barks Received</TableHead>
+                <TableHead>Reactions Received</TableHead>
                 <TableHead className="hidden md:table-cell">
                   Response Rate
                 </TableHead>

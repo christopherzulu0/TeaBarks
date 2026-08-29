@@ -1,6 +1,7 @@
 "use client";
 
 import { CopyableCode } from "@/components/copyable-code";
+import { REACTION_ID_LABEL } from "@/lib/brand";
 
 export function BarkCode({
   code,
@@ -16,8 +17,8 @@ export function BarkCode({
       code={code}
       size={size}
       className={className}
-      label="reaction code"
-      toastTitle="Reaction code copied"
+      label={REACTION_ID_LABEL}
+      toastTitle={`${REACTION_ID_LABEL} copied`}
       toastDescription="Others can paste it into Search to find this reaction."
     />
   );

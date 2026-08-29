@@ -20,14 +20,14 @@ import { notificationCategoryMeta } from "@/lib/meta";
 import type { NotificationCategory } from "@/lib/types";
 
 const descriptions: Record<NotificationCategory, string> = {
-  reply: "When someone replies to your barks or reply chains.",
+  reply: "When someone replies to your reactions or reply chains.",
   mention: "When someone mentions you with @.",
   follower: "When someone starts following you.",
   "creator-response":
     "When a creator officially responds to a discussion you follow.",
   evidence: "When evidence is added or a case you follow changes status.",
   verification: "When your evidence or identity verification status changes.",
-  message: "When someone sends you a private message about a bark, case, or creator.",
+  message: "When someone sends you a private message about a reaction, case, or creator.",
 };
 
 const categoryPrefKey: Record<
@@ -211,7 +211,7 @@ export function NotificationSettingsForm() {
             <div className="space-y-0.5">
               <Label htmlFor="digest-weekly">Weekly research digest</Label>
               <p className="text-xs text-muted-foreground">
-                Top barks and case updates in your topics, every Monday.
+                Top reactions and case updates in your topics, every Monday.
               </p>
             </div>
             <Switch

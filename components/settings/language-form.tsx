@@ -120,15 +120,15 @@ export function LanguageForm() {
           </SelectContent>
         </Select>
         <p className="text-xs text-muted-foreground">
-          Feeds prioritize barks written in these languages.
+          Feeds prioritize reactions written in these languages.
         </p>
       </div>
       <Separator />
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-0.5">
-          <Label htmlFor="auto-translate">Auto-translate barks</Label>
+          <Label htmlFor="auto-translate">Auto-translate reactions</Label>
           <p className="text-xs text-muted-foreground">
-            Show a translation option on barks in other languages.
+            Show a translation option on reactions in other languages.
           </p>
         </div>
         <Switch

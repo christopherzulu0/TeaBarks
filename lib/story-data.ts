@@ -876,14 +876,14 @@ export const contests: Contest[] = [
     entries: 1204,
     status: "active",
     description:
-      "One short story or opening chapter, up to 5,000 words, in any genre. We're looking for thresholds literal or otherwise: doors, borders, contracts, promises. Judged blind by a panel of five TeaBarks featured writers.",
+      "One short story or opening chapter, up to 5,000 words, in any genre. We're looking for thresholds literal or otherwise: doors, borders, contracts, promises. Judged blind by a panel of five TypeReact featured writers.",
   },
   {
     id: "ct-2",
     slug: "small-hours-poetry-2026",
     name: "Small Hours Poetry Prize",
     theme: "Poems written for 3 a.m. — insomnia, night shifts, vigils.",
-    prize: "Publication in the annual TeaBarks anthology + reader's choice badge",
+    prize: "Publication in the annual TypeReact anthology + reader's choice badge",
     deadline: "2026-08-31",
     entries: 687,
     status: "active",

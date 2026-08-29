@@ -112,7 +112,7 @@ export function CreateReviewWizard({ onBack }: { onBack: () => void }) {
           <CardHeader>
             <CardTitle>Choose a creator</CardTitle>
             <CardDescription>
-              Search verified creators on TeaBarks to review their body of work.
+              Search verified creators on TypeReact to review their body of work.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

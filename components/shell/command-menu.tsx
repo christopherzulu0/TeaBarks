@@ -88,7 +88,7 @@ export function CommandMenu() {
         variant="ghost"
         size="icon"
         className="md:hidden"
-        aria-label="Search TeaBarks"
+        aria-label="Search TypeReact"
         onClick={() => setOpen(true)}
       >
         <Search className="size-4.5" />
@@ -97,11 +97,11 @@ export function CommandMenu() {
         type="button"
         onClick={() => setOpen(true)}
         className="hidden h-9 w-full max-w-72 items-center gap-2 rounded-md border bg-muted/40 px-3 text-sm text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring md:inline-flex"
-        aria-label="Search TeaBarks"
+        aria-label="Search TypeReact"
       >
         <Search className="size-4 shrink-0" aria-hidden />
         <span className="flex-1 truncate text-left">
-          Search barks, cases, creators…
+          Search reactions, cases, creators…
         </span>
         <kbd className="pointer-events-none hidden rounded border bg-background px-1.5 py-0.5 font-mono text-[10px] font-medium sm:inline-block">
           Ctrl K
@@ -113,20 +113,20 @@ export function CommandMenu() {
           setOpen(next);
           if (!next) setQuery("");
         }}
-        title="Search TeaBarks"
+        title="Search TypeReact"
       >
         <Command>
           <CommandInput
             value={query}
             onValueChange={setQuery}
-            placeholder="Search barks, bark codes (BRK-…), cases, creators…"
+            placeholder="Search reactions, Reaction IDs (BRK-…), cases, creators…"
           />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             {lookupBark ? (
-              <CommandGroup heading="Bark code">
+              <CommandGroup heading="Reaction ID">
                 <CommandItem
-                  value={`${lookupBark.code} ${lookupBark.title} open bark`}
+                  value={`${lookupBark.code} ${lookupBark.title} open reaction`}
                   onSelect={() => go(`/barks/${lookupBark.code}`)}
                 >
                   <FileText />
@@ -147,7 +147,7 @@ export function CommandMenu() {
                 <Compass /> Explore
               </CommandItem>
               <CommandItem onSelect={() => go("/create")}>
-                <PenSquare /> Create Bark
+                <PenSquare /> Create Reaction
               </CommandItem>
               <CommandItem onSelect={() => go("/stories")}>
                 <BookOpen /> Stories
@@ -168,7 +168,7 @@ export function CommandMenu() {
             {barkItems.length > 0 ? (
               <>
                 <CommandSeparator />
-                <CommandGroup heading="Barks">
+                <CommandGroup heading="Reactions">
                   {barkItems.map((b) => (
                     <CommandItem
                       key={b.id}

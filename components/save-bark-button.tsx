@@ -35,7 +35,7 @@ export function SaveBarkButton({
           try {
             const next = await toggleSave({ code: barkCode });
             toast.success(
-              next.saved ? "Bark saved" : "Removed from saved",
+              next.saved ? "Reaction saved" : "Removed from saved",
               { description: barkCode }
             );
           } catch (error) {

@@ -51,7 +51,7 @@ const process = [
   {
     icon: Flag,
     title: "1. Report is filed",
-    body: "Any user can report barks, replies, cases, profiles, or messages via the flag in the content menu. Reports are private — the reported party never sees who filed.",
+    body: "Any user can report reactions, replies, cases, profiles, or messages via the flag in the content menu. Reports are private — the reported party never sees who filed.",
   },
   {
     icon: Scale,

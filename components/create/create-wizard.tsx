@@ -86,7 +86,7 @@ import { cn } from "@/lib/utils";
 const STEPS = [
   "Source",
   "Detection",
-  "Bark Type",
+  "Reaction Type",
   "Editor",
   "Publish",
 ] as const;
@@ -270,11 +270,11 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
       toast.success(
         variables.status === "draft"
           ? `Draft ${result.code} saved`
-          : `Bark ${result.code} published`,
+          : `Reaction ${result.code} published`,
         {
           description:
             variables.status === "draft"
-              ? "You can resume this bark anytime from Create."
+              ? "You can resume this reaction anytime from Create."
               : "Your evidence-based response is now live.",
         }
       );
@@ -522,9 +522,17 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
     setEvidence((prev) => prev.filter((ev) => ev.id !== id));
   };
 
+  const creator =
+    detectedCreator ?? (source ? getCreator(source.creatorId) ?? null : null);
+  const isPersistedCreator = Boolean(
+    creator && !creator.id.startsWith("remote:")
+  );
+  const isUnclaimedProfile =
+    isPersistedCreator && !creator?.hasTeaBarksProfile;
+
   const publish = () => {
     if (!barkType) {
-      toast.error("Choose a bark type first.");
+      toast.error("Choose a reaction type first.");
       return;
     }
     if (!title.trim() || !body.trim()) {
@@ -540,6 +548,9 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
       sourceTitle: source?.title ?? title,
       sourcePlatform: source?.platform ?? "article",
       sourceCreatorName: creator?.name ?? "Unknown creator",
+      ...(isPersistedCreator && creator
+        ? { sourceCreatorId: creator.id }
+        : {}),
       sourceThumbnailUrl: source?.thumbnailUrl,
       evidence: evidence.map((item) => ({
         type: item.type,
@@ -551,9 +562,6 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
       })),
     });
   };
-
-  const creator =
-    detectedCreator ?? (source ? getCreator(source.creatorId) ?? null : null);
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
@@ -703,7 +711,9 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
                     "flex items-start gap-3 rounded-lg border p-3",
                     creator?.hasTeaBarksProfile
                       ? "border-agree/40 bg-agree/5"
-                      : "border-mixed/40 bg-mixed/5"
+                      : isUnclaimedProfile
+                        ? "border-primary/40 bg-primary/5"
+                        : "border-mixed/40 bg-mixed/5"
                   )}
                 >
                   {creator?.hasTeaBarksProfile ? (
@@ -717,20 +727,24 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
                   <div>
                     <p className="text-sm font-medium">
                       {creator?.hasTeaBarksProfile
-                        ? "Existing TeaBarks profile"
-                        : "New creator detected"}
+                        ? "Existing TypeReact profile"
+                        : isUnclaimedProfile
+                          ? "Unclaimed profile"
+                          : "New creator detected"}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {creator?.hasTeaBarksProfile
-                        ? `${creator.name} is on TeaBarks and responds to ${creator.responseRate}% of discussions.`
-                        : "A claimable profile will be created so the creator can respond."}
+                        ? `${creator.name} is on TypeReact and responds to ${creator.responseRate}% of discussions.`
+                        : isUnclaimedProfile
+                          ? `${creator?.name} has ${formatNumber(creator?.totalBarksReceived ?? 0)} reactions on TypeReact. They can claim this profile to respond.`
+                          : "An unclaimed profile will be created when you publish."}
                     </p>
                   </div>
                 </div>
                 <div className="rounded-lg border p-3">
                   <p className="text-sm font-medium">Existing discussion</p>
                   <p className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted-foreground">
-                    <span>{formatNumber(source.barkCount)} Barks</span>
+                    <span>{formatNumber(source.barkCount)} Reactions</span>
                     <span>{formatNumber(source.replyChainCount)} Reply Chains</span>
                     <span>
                       {source.caseCount} Accountability{" "}
@@ -752,7 +766,7 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
         </div>
       )}
 
-      {/* Step 3: Bark type */}
+      {/* Step 3: Reaction type */}
       {step === 2 && (
         <div className="space-y-4">
           <div className="text-center">
@@ -760,12 +774,12 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
               How are you responding to this source?
             </h2>
             <p className="text-sm text-muted-foreground">
-              Your Bark type frames the discussion and sets reader expectations.
+              Your reaction type frames the discussion and sets reader expectations.
             </p>
           </div>
           <div
             role="radiogroup"
-            aria-label="Bark type"
+            aria-label="Reaction type"
             className="grid gap-3 sm:grid-cols-2"
           >
             {barkTypes.map((t) => {
@@ -816,7 +830,7 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
             <Card className="gap-0 p-0">
               <div className="space-y-3 p-4">
                 <div className="space-y-2">
-                  <Label htmlFor="bark-title">Bark title</Label>
+                  <Label htmlFor="bark-title">Reaction title</Label>
                   <Input
                     id="bark-title"
                     placeholder="A precise, checkable headline for your analysis…"
@@ -894,7 +908,7 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
                   <TabsContent value="write">
                     <Textarea
                       ref={bodyRef}
-                      aria-label="Bark content"
+                      aria-label="Reaction content"
                       placeholder={
                         "Build your argument…\n\n## What the source claims\n\n> Quote the exact claim with a timestamp\n\nPresent your evidence, one claim at a time."
                       }
@@ -1054,7 +1068,7 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
                   </p>
                   {evidence.length === 0 ? (
                     <p className="rounded-md border border-dashed p-3 text-center text-xs text-muted-foreground">
-                      No evidence attached yet. Barks with strong evidence rank
+                      No evidence attached yet. Reactions with strong evidence rank
                       higher.
                     </p>
                   ) : (
@@ -1124,7 +1138,7 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
             <CardHeader>
               <CardTitle className="text-base">Publish Preview</CardTitle>
               <CardDescription>
-                Review everything before your Bark goes live.
+                Review everything before your reaction goes live.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -1140,7 +1154,7 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
                 </div>
                 <div className="rounded-lg border p-3">
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Bark
+                    Reaction
                   </p>
                   <p className="mt-1 line-clamp-2 font-medium">{title}</p>
                   <div className="mt-1 flex items-center gap-2">
@@ -1171,7 +1185,7 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
                 </div>
                 <div className="rounded-lg border p-3">
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Visibility & reaction code
+                    Visibility & Reaction ID
                   </p>
                   <div className="mt-1 flex items-center gap-2">
                     <Select value={visibility} onValueChange={setVisibility}>
@@ -1190,8 +1204,8 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
                     <BarkCode code={barkCode} size="md" />
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Your permanent, citable reaction code is generated at publish.
-                    Copy it so others can search for this bark by code.
+                    Your permanent, citable Reaction ID is generated at publish.
+                    Copy it so others can search for this reaction by Reaction ID.
                   </p>
                 </div>
               </div>
@@ -1208,7 +1222,7 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
                 </>
               ) : (
                 <>
-                  <Check className="size-4" /> Publish Bark
+                  <Check className="size-4" /> Publish Reaction
                 </>
               )}
             </Button>

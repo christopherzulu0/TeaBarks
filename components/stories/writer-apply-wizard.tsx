@@ -202,7 +202,7 @@ export function WriterApplyWizard() {
       }
     }
     if (step === 2 && (!originality || !policy)) {
-      toast.error("Both declarations are required to publish on TeaBarks.");
+      toast.error("Both declarations are required to publish on TypeReact.");
       return;
     }
     setStep((s) => s + 1);
@@ -214,7 +214,7 @@ export function WriterApplyWizard() {
       return;
     }
     if (!originality || !policy) {
-      toast.error("Both declarations are required to publish on TeaBarks.");
+      toast.error("Both declarations are required to publish on TypeReact.");
       return;
     }
     setSubmitting(true);
@@ -398,7 +398,7 @@ export function WriterApplyWizard() {
           <CardHeader>
             <CardTitle>Commitments</CardTitle>
             <CardDescription>
-              The two promises every TeaBarks writer makes.
+              The two promises every TypeReact writer makes.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">

@@ -19,14 +19,14 @@ const policies = [
     icon: HeartHandshake,
     title: "Community Guidelines",
     description:
-      "What conduct is prohibited on TeaBarks — including racism, discrimination, harassment, and fabricated evidence — even when it isn't illegal.",
+      "What conduct is prohibited on TypeReact — including racism, discrimination, harassment, and fabricated evidence — even when it isn't illegal.",
   },
   {
     href: "/policies/evidence-standards",
     icon: FileCheck2,
     title: "Evidence Standards",
     description:
-      "What counts as valid evidence, how verification levels work, and the sourcing bar for barks and accountability cases.",
+      "What counts as valid evidence, how verification levels work, and the sourcing bar for reactions and accountability cases.",
   },
   {
     href: "/policies/enforcement",
@@ -43,8 +43,8 @@ export default function PoliciesPage() {
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Policies</h1>
         <p className="text-muted-foreground">
-          TeaBarks is built on evidence and good faith. These policies define
-          the standards every discussion, bark, and accountability case must
+          TypeReact is built on evidence and good faith. These policies define
+          the standards every discussion, reaction, and accountability case must
           meet — and what happens when they don&apos;t.
         </p>
       </div>

@@ -6,7 +6,7 @@ const columns = [
     heading: "Platform",
     links: [
       { label: "Explore", href: "/explore" },
-      { label: "Barks", href: "/barks" },
+      { label: "Reactions", href: "/barks" },
       { label: "Accountability Cases", href: "/cases" },
       { label: "Stories", href: "/stories" },
       { label: "Topics", href: "/topics" },
@@ -45,9 +45,9 @@ export function Footer() {
           <Link
             href="/"
             className="inline-flex rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
-            aria-label="TeaBarks home"
+            aria-label="TypeReact home"
           >
-            <BrandLogo alt="" className="h-16 w-auto max-w-[12rem]" />
+            <BrandLogo alt="" className="h-28 w-auto max-w-[20rem] sm:h-32" />
           </Link>
           <p className="max-w-xs text-sm text-muted-foreground">
             A platform where ideas compete through evidence, reasoning, and
@@ -74,7 +74,7 @@ export function Footer() {
       </div>
       <div className="border-t">
         <p className="mx-auto max-w-6xl px-4 py-4 text-xs text-muted-foreground lg:px-6">
-          © 2026 TeaBarks. Evidence beats rumors. Logic beats popularity.
+          © 2026 TypeReact. Evidence beats rumors. Logic beats popularity.
         </p>
       </div>
     </footer>

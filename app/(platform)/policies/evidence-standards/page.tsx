@@ -45,7 +45,7 @@ const tiers = [
 const requirements = [
   {
     title: "Every claim needs evidence",
-    body: "Barks and accountability cases must attach at least one evidence item per factual claim. Opinion and analysis are welcome, but they must be clearly distinguishable from asserted fact.",
+    body: "Reactions and accountability cases must attach at least one evidence item per factual claim. Opinion and analysis are welcome, but they must be clearly distinguishable from asserted fact.",
   },
   {
     title: "Original context required",
@@ -57,7 +57,7 @@ const requirements = [
   },
   {
     title: "Corrections are versioned, not hidden",
-    body: "When evidence is retracted or corrected, authors update the bark or case; the version history keeps the record transparent. Silent deletion of refuted claims is a violation.",
+    body: "When evidence is retracted or corrected, authors update the reaction or case; the version history keeps the record transparent. Silent deletion of refuted claims is a violation.",
   },
   {
     title: "Community verification",
@@ -77,7 +77,7 @@ export default function EvidenceStandardsPage() {
         </Link>
         <h1 className="text-3xl font-bold tracking-tight">Evidence Standards</h1>
         <p className="text-muted-foreground">
-          Evidence ratings on barks and cases are computed from the quality,
+          Evidence ratings on reactions and cases are computed from the quality,
           independence, and verifiability of attached sources. Here is what each
           tier means and what the platform requires.
         </p>
@@ -87,7 +87,7 @@ export default function EvidenceStandardsPage() {
         <CardHeader>
           <CardTitle>Evidence tiers</CardTitle>
           <CardDescription>
-            The rating shown next to every bark and case.
+            The rating shown next to every reaction and case.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

@@ -102,6 +102,7 @@ export const barkDocFields = {
   sourceTitle: v.string(),
   sourcePlatform,
   sourceCreatorName: v.string(),
+  sourceCreatorId: v.optional(v.id("creators")),
   sourceThumbnailUrl: v.optional(v.string()),
   evidence: v.array(evidenceItem),
   evidenceRating: v.number(),
@@ -381,7 +382,8 @@ export const caseClaimInput = v.object({
 export const creatorStatus = v.union(
   v.literal("pending"),
   v.literal("approved"),
-  v.literal("rejected")
+  v.literal("rejected"),
+  v.literal("unclaimed")
 );
 
 export const creatorVerificationMethod = v.union(
@@ -412,6 +414,8 @@ export const creatorDocFields = {
   totalSources: v.number(),
   totalBarksReceived: v.number(),
   responseRate: v.number(),
+  externalPlatform: v.optional(sourcePlatform),
+  externalHandle: v.optional(v.string()),
   createdAt: v.number(),
   updatedAt: v.number(),
 };

@@ -218,7 +218,7 @@ export function ApplyWizard() {
       <div className="space-y-2">
         <h1 className="text-2xl font-bold tracking-tight">Become a Creator</h1>
         <p className="text-sm text-muted-foreground">
-          Verify that you own the public channels being discussed on TeaBarks.
+          Verify that you own the public channels being discussed on TypeReact.
           Verified creators get a badge, an official profile, and the ability to
           respond to barks and accountability cases about their content.
         </p>
@@ -317,7 +317,7 @@ export function ApplyWizard() {
           <CardHeader>
             <CardTitle>Public identity</CardTitle>
             <CardDescription>
-              How your creator profile will appear on TeaBarks.
+              How your creator profile will appear on TypeReact.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

@@ -41,6 +41,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { getBarkByCodeAction } from "@/app/actions/barks";
+import { getCreatorByIdAction } from "@/app/actions/creators";
 import { youtubeThumbnailUrl } from "@/lib/detect-source";
 import { getCreator, getSource, getUser, getBarkByCode, repliesForBark } from "@/lib/data";
 import { formatDate, formatNumber } from "@/lib/format";
@@ -69,7 +70,7 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { code } = await props.params;
   const bark = await resolveBark(code);
-  return { title: bark ? bark.title : "Bark not found" };
+  return { title: bark ? bark.title : "Reaction not found" };
 }
 
 const evidenceTabs: { value: EvidenceType | "all"; label: string }[] = [
@@ -123,28 +124,33 @@ export default async function BarkPage(props: PageProps<"/barks/[code]">) {
           evidenceRating: bark.evidenceRating,
         }
       : undefined);
-  const creator = source
-    ? getCreator(source.creatorId) ??
-      (bark.sourceCreatorName
-        ? {
-            id: "convex-creator",
-            handle: "source",
-            name: bark.sourceCreatorName,
-            bio: "",
-            verified: false,
-            hasTeaBarksProfile: false,
-            platforms: source.platform ? [source.platform] : [],
-            officialLinks: [],
-            followers: 0,
-            country: "",
-            topics: [],
-            totalSources: 1,
-            totalBarksReceived: 0,
-            responseRate: 0,
-            joinedAt: bark.publishedAt,
-          }
-        : undefined)
-    : undefined;
+  const creatorFromId = bark.sourceCreatorId
+    ? await getCreatorByIdAction(bark.sourceCreatorId)
+    : null;
+  const creator =
+    creatorFromId ??
+    (source
+      ? getCreator(source.creatorId) ??
+        (bark.sourceCreatorName
+          ? {
+              id: "convex-creator",
+              handle: "source",
+              name: bark.sourceCreatorName,
+              bio: "",
+              verified: false,
+              hasTeaBarksProfile: false,
+              platforms: source.platform ? [source.platform] : [],
+              officialLinks: [],
+              followers: 0,
+              country: "",
+              topics: [],
+              totalSources: 1,
+              totalBarksReceived: 0,
+              responseRate: 0,
+              joinedAt: bark.publishedAt,
+            }
+          : undefined)
+      : undefined);
   const replies = repliesForBark(bark.id);
 
   return (
@@ -159,7 +165,7 @@ export default async function BarkPage(props: PageProps<"/barks/[code]">) {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link href="/barks">Barks</Link>
+              <Link href="/barks">Reactions</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -243,7 +249,7 @@ export default async function BarkPage(props: PageProps<"/barks/[code]">) {
                     path={`/barks/${bark.code}`}
                   />
                   <ReportButton
-                    target={`bark ${bark.code}`}
+                    target={`reaction ${bark.code}`}
                     barkCode={bark.live ? bark.code : undefined}
                     targetKind="bark"
                     targetId={bark.code}
@@ -347,7 +353,7 @@ export default async function BarkPage(props: PageProps<"/barks/[code]">) {
         </article>
 
         {/* Evidence panel + cite */}
-        <aside className="min-w-0 space-y-4 lg:sticky lg:top-20 lg:h-fit">
+        <aside className="min-w-0 space-y-4 lg:sticky lg:top-24 lg:h-fit">
           <CiteEmbed
             kind="bark"
             code={bark.code}

@@ -28,7 +28,7 @@ function SavedHeader() {
     <div>
       <h1 className="text-2xl font-bold tracking-tight">Saved</h1>
       <p className="text-sm text-muted-foreground">
-        Your personal research library of barks and cases.
+        Your personal research library of reactions and cases.
       </p>
     </div>
   );
@@ -100,7 +100,7 @@ function SavedSignedIn() {
       <SavedHeader />
       <Tabs defaultValue="barks">
         <TabsList>
-          <TabsTrigger value="barks">Barks ({savedBarks.length})</TabsTrigger>
+          <TabsTrigger value="barks">Reactions ({savedBarks.length})</TabsTrigger>
           <TabsTrigger value="cases">Cases ({savedCases.length})</TabsTrigger>
           <TabsTrigger value="sources">Sources ({sourceDocs.length})</TabsTrigger>
         </TabsList>
@@ -108,11 +108,11 @@ function SavedSignedIn() {
           {savedBarks.length === 0 ? (
             <EmptyState
               icon={Bookmark}
-              title="No saved barks"
-              description="Save a published bark to keep it in your research library."
+              title="No saved reactions"
+              description="Save a published reaction to keep it in your research library."
               action={
                 <Button asChild size="sm">
-                  <Link href="/barks">Discover barks</Link>
+                  <Link href="/barks">Discover reactions</Link>
                 </Button>
               }
             />
@@ -146,7 +146,7 @@ function SavedSignedIn() {
               description="Save sources while browsing to build your research library."
               action={
                 <Button asChild size="sm">
-                  <Link href="/barks">Discover barks</Link>
+                  <Link href="/barks">Discover reactions</Link>
                 </Button>
               }
             />
@@ -206,7 +206,7 @@ export function SavedLibrary() {
           <EmptyState
             icon={Bookmark}
             title="Sign in to see saved items"
-            description="Save barks, cases, and sources while you research, then find them here."
+            description="Save reactions, cases, and sources while you research, then find them here."
             action={
               <SignInButton>
                 <Button>Sign in</Button>

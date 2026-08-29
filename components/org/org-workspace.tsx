@@ -38,7 +38,7 @@ const statMeta: {
   icon: LucideIcon;
   suffix?: string;
 }[] = [
-  { label: "Total Barks", icon: FileText },
+  { label: "Total Reactions", icon: FileText },
   { label: "Active Cases", icon: Scale },
   { label: "Team Members", icon: Users },
   { label: "Research Activity", icon: Activity, suffix: "%" },
@@ -158,7 +158,7 @@ export function OrgWorkspace() {
             <CardHeader>
               <CardTitle className="text-base">Research Activity</CardTitle>
               <CardDescription>
-                Barks published, cases opened, and evidence filed per month
+                Reactions published, cases opened, and evidence filed per month
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -173,7 +173,7 @@ export function OrgWorkspace() {
             <div className="space-y-3">
               {recentBarks.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  No published barks yet.
+                  No published reactions yet.
                 </p>
               ) : (
                 recentBarks.map((b) => <BarkCard key={b.id} bark={b} />)

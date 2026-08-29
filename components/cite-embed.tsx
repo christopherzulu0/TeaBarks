@@ -18,6 +18,12 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { BRAND_NAME } from "@/lib/brand";
+
+const CITE_KIND_LABEL: Record<"bark" | "case", string> = {
+  bark: "Reaction",
+  case: "case",
+};
 
 export function CiteEmbed({
   code,
@@ -30,7 +36,7 @@ export function CiteEmbed({
   path: string;
   kind?: "bark" | "case";
 }) {
-  const [origin, setOrigin] = React.useState("https://teabarks.app");
+  const [origin, setOrigin] = React.useState("https://typereact.app");
   const [copied, setCopied] = React.useState<"embed" | "cite" | null>(null);
 
   React.useEffect(() => {
@@ -40,11 +46,11 @@ export function CiteEmbed({
   const url = `${origin}${path}`;
   const cite =
     kind === "bark"
-      ? `${title} (${code}). TeaBarks. ${url}`
-      : `${title} (${code}). TeaBarks Accountability Case. ${url}`;
-  const embed = `<blockquote cite="${url}" data-teabarks="${code}">
+      ? `${title} (${code}). ${BRAND_NAME}. ${url}`
+      : `${title} (${code}). ${BRAND_NAME} Accountability Case. ${url}`;
+  const embed = `<blockquote cite="${url}" data-typereact="${code}">
   <p><a href="${url}">${title}</a> — <code>${code}</code></p>
-  <footer>TeaBarks</footer>
+  <footer>${BRAND_NAME}</footer>
 </blockquote>
 <script async src="${origin}/embed.js" data-code="${code}"></script>`;
 
@@ -64,7 +70,7 @@ export function CiteEmbed({
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-sm">
           <QrCode className="size-4 text-primary" aria-hidden />
-          Cite this {kind}
+          Cite this {CITE_KIND_LABEL[kind]}
         </CardTitle>
         <CardDescription className="text-xs">
           For articles, orgs, and classrooms — QR, citation, or embed snippet.

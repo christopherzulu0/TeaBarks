@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 export function BrandLogo({
-  alt = "TeaBarks",
+  alt = "TypeReact",
   className,
 }: {
   alt?: string;

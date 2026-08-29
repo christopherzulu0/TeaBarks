@@ -16,6 +16,8 @@ import {
 import { formatNumber } from "@/lib/format";
 import { caseStatusMeta } from "@/lib/meta";
 import { topics } from "@/lib/topics";
+import { SHELL_STICKY_HEIGHT, SHELL_STICKY_TOP } from "@/lib/shell";
+import { cn } from "@/lib/utils";
 
 export async function RightPanel() {
   const [publishedCases, approvedCreators, categoryStats] = await Promise.all([
@@ -44,7 +46,11 @@ export async function RightPanel() {
   return (
     <aside
       aria-label="Trending and suggestions"
-      className="sticky top-20 hidden h-[calc(100svh-5rem)] w-80 shrink-0 space-y-4 overflow-y-auto p-4 xl:block"
+      className={cn(
+        "sticky hidden w-80 shrink-0 space-y-4 overflow-y-auto p-4 xl:block",
+        SHELL_STICKY_TOP,
+        SHELL_STICKY_HEIGHT
+      )}
     >
       <Card className="gap-3 py-4">
         <CardHeader className="px-4">
@@ -113,7 +119,7 @@ export async function RightPanel() {
 
       <Card className="gap-3 py-4">
         <CardHeader className="px-4">
-          <CardTitle className="text-sm">Creators on TeaBarks</CardTitle>
+          <CardTitle className="text-sm">Creators on TypeReact</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 px-4">
           {suggestedCreators.length === 0 ? (

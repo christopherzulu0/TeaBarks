@@ -18,7 +18,7 @@ export default function ReadingSettingsPage() {
       <CardHeader>
         <CardTitle>Reading</CardTitle>
         <CardDescription>
-          Adjust text size for long-form content across TeaBarks.
+          Adjust text size for long-form content across TypeReact.
         </CardDescription>
       </CardHeader>
       <CardContent>

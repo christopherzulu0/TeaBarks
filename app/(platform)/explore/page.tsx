@@ -53,7 +53,7 @@ export default async function ExplorePage() {
         <Tabs defaultValue="sources">
           <TabsList>
             <TabsTrigger value="sources">Sources</TabsTrigger>
-            <TabsTrigger value="barks">Barks</TabsTrigger>
+            <TabsTrigger value="barks">Reactions</TabsTrigger>
             <TabsTrigger value="cases">Cases</TabsTrigger>
           </TabsList>
           <TabsContent value="sources" className="mt-4">

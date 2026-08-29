@@ -34,7 +34,7 @@ export function AdminUsers() {
             <TableHeader>
               <TableRow>
                 <TableHead>User</TableHead>
-                <TableHead>Barks</TableHead>
+                <TableHead>Reactions</TableHead>
                 <TableHead>Evidence Score</TableHead>
                 <TableHead className="hidden md:table-cell">Status</TableHead>
               </TableRow>

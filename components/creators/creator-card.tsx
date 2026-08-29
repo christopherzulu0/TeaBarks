@@ -47,7 +47,7 @@ export function CreatorCard({
                 variant="secondary"
                 className="border-0 bg-background/90 text-[10px] text-foreground backdrop-blur"
               >
-                On TeaBarks
+                On TypeReact
               </Badge>
             ) : (
               <Badge
@@ -115,7 +115,7 @@ export function CreatorCard({
                 <MessageSquareText className="size-3 text-muted-foreground" />
                 {formatNumber(creator.totalBarksReceived)}
               </p>
-              <p className="text-muted-foreground">barks</p>
+              <p className="text-muted-foreground">reactions</p>
             </div>
             <div>
               <p

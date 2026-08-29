@@ -63,12 +63,12 @@ export default async function CountryDetailPage(props: {
         <div className="space-y-2">
           <h1 className="text-2xl font-bold tracking-tight">{country.name}</h1>
           <p className="text-sm text-muted-foreground">
-            Local feed of barks and cases grounded in sources from{" "}
+            Local feed of reactions and cases grounded in sources from{" "}
             {country.name}.
           </p>
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary">
-              {formatNumber(barkCount)} barks
+              {formatNumber(barkCount)} reactions
             </Badge>
             <Badge variant="outline">
               {activeDiscussions} active discussions
@@ -83,7 +83,7 @@ export default async function CountryDetailPage(props: {
       <Tabs defaultValue="barks">
         <TabsList>
           <TabsTrigger value="barks">
-            Barks ({localBarks.length})
+            Reactions ({localBarks.length})
           </TabsTrigger>
           <TabsTrigger value="cases">
             Cases ({localCases.length})
@@ -93,7 +93,7 @@ export default async function CountryDetailPage(props: {
           {localBarks.length === 0 ? (
             <EmptyState
               icon={Globe}
-              title="No local barks yet"
+              title="No local reactions yet"
               description="Discussions tagged to this country will appear here."
             />
           ) : (

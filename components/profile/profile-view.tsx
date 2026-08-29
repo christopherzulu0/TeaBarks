@@ -413,7 +413,7 @@ export function ProfileView({
                       variant="outline"
                       className="bg-agree/10 text-agree border-agree/30"
                     >
-                      Barker
+                      Reactor
                     </Badge>
                     {creator && (
                       <Badge
@@ -481,7 +481,7 @@ export function ProfileView({
                   <>
                     <Button asChild className="h-10 w-full sm:h-8 sm:w-auto">
                       <Link href="/create">
-                        <PenSquare className="size-4" /> New Bark
+                        <PenSquare className="size-4" /> New Reaction
                       </Link>
                     </Button>
                     <Button
@@ -518,7 +518,7 @@ export function ProfileView({
                     Draft in progress
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {draft.title?.trim() || "Untitled bark"} · step{" "}
+                    {draft.title?.trim() || "Untitled reaction"} · step{" "}
                     {draft.step + 1} of 5
                     {draft.barkType
                       ? ` · ${barkTypeMeta[draft.barkType].label}`
@@ -539,7 +539,7 @@ export function ProfileView({
               <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {[
                   {
-                    label: "Barks",
+                    label: "Reactions",
                     value: formatNumber(user.barkCount),
                   },
                   {
@@ -572,7 +572,7 @@ export function ProfileView({
               <Tabs value={tab} onValueChange={setTab}>
                 <TabsList className="w-full justify-start overflow-x-auto">
                   <TabsTrigger value="barks">
-                    Barks ({sortedBarks.length})
+                    Reactions ({sortedBarks.length})
                   </TabsTrigger>
                   {isOwner ? (
                     <>
@@ -598,11 +598,11 @@ export function ProfileView({
                   {sortedBarks.length === 0 ? (
                     <EmptyState
                       icon={FileText}
-                      title={isOwner ? "No barks yet" : "No public barks yet"}
+                      title={isOwner ? "No reactions yet" : "No public reactions yet"}
                       description={
                         isOwner
                           ? "Your published evidence-based responses will show here."
-                          : "This person hasn't published any public barks yet."
+                          : "This person hasn't published any public reactions yet."
                       }
                       action={
                         isOwner ? (
@@ -610,7 +610,7 @@ export function ProfileView({
                             <Link
                               href="/create"
                             >
-                              Create a Bark
+                              Create Reaction
                             </Link>
                           </Button>
                         ) : undefined
@@ -673,7 +673,7 @@ export function ProfileView({
                     <EmptyState
                       icon={Bookmark}
                       title="Nothing saved yet"
-                      description="Save barks while reading to build your research library."
+                      description="Save reactions while reading to build your research library."
                       action={
                         <Button asChild size="sm" variant="outline">
                           <Link href="/saved">Open saved</Link>
@@ -713,7 +713,7 @@ export function ProfileView({
                             )}
                           </div>
                           <p className="font-medium">
-                            {draft.title?.trim() || "Untitled bark"}
+                            {draft.title?.trim() || "Untitled reaction"}
                           </p>
                           <p className="line-clamp-2 text-sm text-muted-foreground">
                             {draft.body?.trim() ||
@@ -733,13 +733,13 @@ export function ProfileView({
                     <EmptyState
                       icon={FileText}
                       title="No drafts"
-                      description="Drafts you save from the Bark editor will appear here."
+                      description="Drafts you save from the reaction editor will appear here."
                       action={
                         <Button asChild size="sm">
                           <Link
                             href="/create"
                           >
-                            Start a Bark
+                            Start a Reaction
                           </Link>
                         </Button>
                       }
@@ -750,7 +750,7 @@ export function ProfileView({
               </Tabs>
             </div>
 
-            <aside className="space-y-4 lg:sticky lg:top-20 lg:h-fit">
+            <aside className="space-y-4 lg:sticky lg:top-24 lg:h-fit">
               <Card className="gap-0 p-0">
                 <div className="space-y-4 p-4">
                   <h2 className="flex items-center gap-2 text-sm font-semibold">
@@ -777,7 +777,7 @@ export function ProfileView({
                     />
                     <p className="text-xs text-muted-foreground">
                       Community score based on citations, primary sources, and
-                      how your barks hold up under scrutiny.
+                      how your reactions hold up under scrutiny.
                     </p>
                   </div>
                 </div>
@@ -786,7 +786,7 @@ export function ProfileView({
               {typeBreakdown.length > 0 && (
                 <Card className="gap-0 p-0">
                   <div className="space-y-3 p-4">
-                    <h2 className="text-sm font-semibold">Bark mix</h2>
+                    <h2 className="text-sm font-semibold">Reaction mix</h2>
                     <ul className="space-y-2">
                       {typeBreakdown.map(({ type, count }) => (
                         <li
@@ -816,7 +816,7 @@ export function ProfileView({
                   <div className="grid gap-2">
                     <Button asChild variant="secondary" size="sm">
                       <Link href="/create">
-                        Create Bark
+                        Create Reaction
                       </Link>
                     </Button>
                     <Button asChild variant="outline" size="sm">

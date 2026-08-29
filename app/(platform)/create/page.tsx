@@ -4,7 +4,7 @@ import { CreateWizard } from "@/components/create/create-wizard";
 import { RouteLoading } from "@/components/route-loading";
 
 export const metadata: Metadata = {
-  title: "Create a Bark",
+  title: "Create Reaction",
 };
 
 export default function CreatePage() {

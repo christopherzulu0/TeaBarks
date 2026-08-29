@@ -26,8 +26,8 @@ const sourceSerif = Source_Serif_4({
 
 export const metadata: Metadata = {
   title: {
-    default: "TeaBarks — Evidence-Based Discussion & Accountability",
-    template: "%s | TeaBarks",
+    default: "TypeReact — Evidence-Based Discussion & Accountability",
+    template: "%s | TypeReact",
   },
   description:
     "Where ideas are challenged through evidence. Analyze, debate, and document public content with evidence-based arguments.",

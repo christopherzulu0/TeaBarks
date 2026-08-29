@@ -16,6 +16,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { sortBarksByPublishedAt } from "@/lib/barks/query";
+import { featuredReactionCodeBySourceUrl } from "@/lib/sources/featured-reaction";
 import { currentUser, topics } from "@/lib/data";
 import { formatNumber } from "@/lib/format";
 
@@ -59,8 +60,8 @@ function Hero() {
             <input
               type="search"
               name="q"
-              placeholder="Search a claim, creator, video, or Bark Code…"
-              aria-label="Search TeaBarks"
+              placeholder="Search a claim, creator, video, or Reaction ID…"
+              aria-label="Search TypeReact"
               className="h-11 w-full rounded-md border bg-background pl-9 pr-3 text-sm shadow-sm outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
@@ -105,6 +106,7 @@ export default async function HomePage() {
     listPublicSources(),
   ]);
   const beingBarkedAbout = publicSources.slice(0, 6);
+  const featuredCodeByUrl = featuredReactionCodeBySourceUrl(published);
   const trendingBarks = [...published]
     .sort((a, b) => b.upvotes - a.upvotes)
     .slice(0, 5);
@@ -118,9 +120,9 @@ export default async function HomePage() {
       <Hero />
       <div className="flex">
         <div className="min-w-0 flex-1 space-y-10 px-4 py-8 lg:px-6">
-          <section aria-labelledby="being-barked-about">
+          <section aria-labelledby="under-discussion">
             <SectionHeader
-              title="Being Barked About"
+              title="Under Discussion"
               description="The sources drawing the most analysis right now"
               href="/explore"
             />
@@ -130,12 +132,17 @@ export default async function HomePage() {
                   <EmptyState
                     icon={FileText}
                     title="No sources yet"
-                    description="When barks are published, the sources drawing the most analysis will show up here."
+                    description="When reactions are published, the sources drawing the most analysis will show up here."
                   />
                 </div>
               ) : (
                 beingBarkedAbout.map((s) => (
-                  <SourceCard key={s.id} source={s} />
+                  <SourceCard
+                    key={s.id}
+                    source={s}
+                    showActionBar
+                    discussionCode={featuredCodeByUrl.get(s.url.trim())}
+                  />
                 ))
               )}
             </div>
@@ -143,7 +150,7 @@ export default async function HomePage() {
 
           <section aria-labelledby="trending-barks">
             <SectionHeader
-              title="Trending Barks"
+              title="Trending Reactions"
               description="The most upvoted evidence-based responses"
               href="/barks"
             />
@@ -151,8 +158,8 @@ export default async function HomePage() {
               {trendingBarks.length === 0 ? (
                 <EmptyState
                   icon={MessageSquare}
-                  title="No published barks yet"
-                  description="The most upvoted published barks will appear here."
+                  title="No published reactions yet"
+                  description="The most upvoted published reactions will appear here."
                 />
               ) : (
                 trendingBarks.map((b) => <BarkCard key={b.id} bark={b} />)
@@ -180,8 +187,8 @@ export default async function HomePage() {
                 {localFeed.length === 0 ? (
                   <EmptyState
                     icon={MessageSquare}
-                    title="No local barks yet"
-                    description="Barks from your country will show up here when they include a location."
+                    title="No local reactions yet"
+                    description="Reactions from your country will show up here when they include a location."
                   />
                 ) : (
                   localFeed.map((b) => <BarkCard key={b.id} bark={b} />)
@@ -191,8 +198,8 @@ export default async function HomePage() {
                 {globalFeed.length === 0 ? (
                   <EmptyState
                     icon={MessageSquare}
-                    title="No published barks yet"
-                    description="Newest published barks from around the world will appear here."
+                    title="No published reactions yet"
+                    description="Newest published reactions from around the world will appear here."
                   />
                 ) : (
                   globalFeed.map((b) => <BarkCard key={b.id} bark={b} />)
@@ -223,7 +230,7 @@ export default async function HomePage() {
                       {t.description}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {formatNumber(t.barkCount)} barks ·{" "}
+                      {formatNumber(t.barkCount)} reactions ·{" "}
                       {formatNumber(t.caseCount)} cases
                     </p>
                   </Card>

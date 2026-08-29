@@ -71,7 +71,7 @@ export function CountriesDirectory() {
                 <div className="min-w-0">
                   <p className="font-semibold">{c.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {formatNumber(c.barkCount)} barks · {c.activeDiscussions}{" "}
+                    {formatNumber(c.barkCount)} reactions · {c.activeDiscussions}{" "}
                     active discussions
                   </p>
                 </div>

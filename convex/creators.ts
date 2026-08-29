@@ -1,5 +1,11 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
+import {
+  mutation,
+  query,
+  type MutationCtx,
+  type QueryCtx,
+} from "./_generated/server";
 import { clerkUserId, requireIdentity } from "./lib/auth";
 import { recordModerationEvent } from "./lib/moderation";
 import { displayName, notify } from "./lib/notify";
@@ -15,6 +21,12 @@ const creatorDoc = v.object({
   _creationTime: v.number(),
 });
 
+const publicCreatorStatuses = new Set(["approved", "unclaimed"]);
+
+function isPublicCreator(creator: Doc<"creators">) {
+  return publicCreatorStatuses.has(creator.status);
+}
+
 function slugifyHandle(name: string) {
   const base =
     name
@@ -22,6 +34,49 @@ function slugifyHandle(name: string) {
       .replace(/[^a-z0-9]+/g, "")
       .slice(0, 24) || "creator";
   return base;
+}
+
+async function findByExternalIdentity(
+  ctx: QueryCtx | MutationCtx,
+  platform: Doc<"creators">["externalPlatform"],
+  externalHandle: string
+) {
+  if (!platform) return null;
+  return await ctx.db
+    .query("creators")
+    .withIndex("by_external_identity", (q) =>
+      q.eq("externalPlatform", platform).eq("externalHandle", externalHandle)
+    )
+    .unique();
+}
+
+async function allocateUniqueHandle(ctx: QueryCtx | MutationCtx, baseHandle: string) {
+  let handle = baseHandle.slice(0, 24) || "creator";
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const taken = await ctx.db
+      .query("creators")
+      .withIndex("by_handle", (q) => q.eq("handle", handle))
+      .unique();
+    if (!taken) return handle;
+    handle = `${baseHandle.slice(0, 20)}${attempt + 2}`;
+  }
+  throw new Error("Could not allocate a unique handle");
+}
+
+async function allocateUnclaimedApplicationCode(ctx: MutationCtx) {
+  const year = new Date().getUTCFullYear();
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const n = 1000 + Math.floor(Math.random() * 9000);
+    const candidate = `UNC-${year}-${String(n).padStart(4, "0")}`;
+    const clash = await ctx.db
+      .query("creators")
+      .withIndex("by_applicationCode", (q) =>
+        q.eq("applicationCode", candidate)
+      )
+      .unique();
+    if (!clash) return candidate;
+  }
+  throw new Error("Could not allocate an unclaimed application code");
 }
 
 export const apply = mutation({
@@ -38,6 +93,7 @@ export const apply = mutation({
       })
     ),
     verificationMethod: creatorVerificationMethod,
+    upgradeCreatorId: v.optional(v.id("creators")),
   },
   returns: v.object({ applicationCode: v.string() }),
   handler: async (ctx, args) => {
@@ -68,6 +124,54 @@ export const apply = mutation({
       throw new Error("You already have an approved creator profile");
     }
 
+    const filteredLinks = args.officialLinks.filter((link) => link.url.trim());
+    const now = Date.now();
+    const applicantName =
+      user?.name ||
+      (typeof identity.name === "string" && identity.name) ||
+      name;
+
+    if (args.upgradeCreatorId) {
+      const stub = await ctx.db.get(args.upgradeCreatorId);
+      if (!stub || stub.status !== "unclaimed") {
+        throw new Error("Unclaimed profile not found");
+      }
+      const year = new Date().getUTCFullYear();
+      let applicationCode = stub.applicationCode;
+      if (!applicationCode.startsWith("APP-")) {
+        for (let attempt = 0; attempt < 8; attempt++) {
+          const n = 1000 + Math.floor(Math.random() * 9000);
+          const candidate = `APP-${year}-${String(n).padStart(4, "0")}`;
+          const clash = await ctx.db
+            .query("creators")
+            .withIndex("by_applicationCode", (q) =>
+              q.eq("applicationCode", candidate)
+            )
+            .unique();
+          if (!clash) {
+            applicationCode = candidate;
+            break;
+          }
+        }
+      }
+
+      await ctx.db.patch(stub._id, {
+        applicationCode,
+        name,
+        bio: args.bio.trim(),
+        country: args.country.trim() || "US",
+        category: args.category.trim(),
+        platforms: args.platforms,
+        officialLinks: filteredLinks,
+        verificationMethod: args.verificationMethod,
+        applicantClerkId,
+        applicantName,
+        status: "pending",
+        updatedAt: now,
+      });
+      return { applicationCode };
+    }
+
     const year = new Date().getUTCFullYear();
     let applicationCode = "";
     for (let attempt = 0; attempt < 8; attempt++) {
@@ -89,28 +193,7 @@ export const apply = mutation({
     }
 
     const base = slugifyHandle(name);
-    let handle = base;
-    let handleTaken = true;
-    for (let attempt = 0; attempt < 12; attempt++) {
-      const taken = await ctx.db
-        .query("creators")
-        .withIndex("by_handle", (q) => q.eq("handle", handle))
-        .unique();
-      if (!taken) {
-        handleTaken = false;
-        break;
-      }
-      handle = `${base}${attempt + 2}`;
-    }
-    if (handleTaken) {
-      throw new Error("Could not allocate a unique handle");
-    }
-
-    const now = Date.now();
-    const applicantName =
-      user?.name ||
-      (typeof identity.name === "string" && identity.name) ||
-      name;
+    const handle = await allocateUniqueHandle(ctx, base);
 
     await ctx.db.insert("creators", {
       applicationCode,
@@ -120,7 +203,7 @@ export const apply = mutation({
       country: args.country.trim() || "US",
       category: args.category.trim(),
       platforms: args.platforms,
-      officialLinks: args.officialLinks.filter((link) => link.url.trim()),
+      officialLinks: filteredLinks,
       verificationMethod: args.verificationMethod,
       applicantClerkId,
       applicantName,
@@ -150,6 +233,129 @@ export const listApproved = query({
   },
 });
 
+export const listPublic = query({
+  args: {},
+  returns: v.array(creatorDoc),
+  handler: async (ctx) => {
+    const [approved, unclaimed] = await Promise.all([
+      ctx.db
+        .query("creators")
+        .withIndex("by_status_createdAt", (q) => q.eq("status", "approved"))
+        .order("desc")
+        .take(50),
+      ctx.db
+        .query("creators")
+        .withIndex("by_status_createdAt", (q) => q.eq("status", "unclaimed"))
+        .order("desc")
+        .take(50),
+    ]);
+    return [...approved, ...unclaimed].sort(
+      (a, b) => b.totalBarksReceived - a.totalBarksReceived
+    );
+  },
+});
+
+export const getByExternalIdentity = query({
+  args: {
+    platform: sourcePlatform,
+    externalHandle: v.string(),
+  },
+  returns: v.union(creatorDoc, v.null()),
+  handler: async (ctx, args) => {
+    const creator = await findByExternalIdentity(
+      ctx,
+      args.platform,
+      args.externalHandle
+    );
+    if (!creator || !isPublicCreator(creator)) return null;
+    return creator;
+  },
+});
+
+export const ensureUnclaimedFromSource = mutation({
+  args: {
+    platform: sourcePlatform,
+    externalHandle: v.string(),
+    displayName: v.string(),
+    sourceUrl: v.string(),
+    channelUrl: v.optional(v.string()),
+  },
+  returns: v.object({ creatorId: v.id("creators") }),
+  handler: async (ctx, args) => {
+    const externalHandle = args.externalHandle.trim().toLowerCase();
+    if (!externalHandle) throw new Error("External handle is required");
+
+    const existing = await findByExternalIdentity(
+      ctx,
+      args.platform,
+      externalHandle
+    );
+    const now = Date.now();
+    const displayName = args.displayName.trim() || externalHandle;
+
+    if (existing) {
+      if (existing.status === "approved") {
+        return { creatorId: existing._id };
+      }
+      if (existing.status === "unclaimed") {
+        const patch: Partial<Doc<"creators">> = { updatedAt: now };
+        if (displayName && displayName !== existing.name) {
+          patch.name = displayName;
+        }
+        const channelUrl = args.channelUrl?.trim();
+        if (
+          channelUrl &&
+          !existing.officialLinks.some((link) => link.url === channelUrl)
+        ) {
+          patch.officialLinks = [
+            ...existing.officialLinks,
+            { label: args.platform, url: channelUrl },
+          ];
+        }
+        if (Object.keys(patch).length > 1) {
+          await ctx.db.patch(existing._id, patch);
+        }
+        return { creatorId: existing._id };
+      }
+    }
+
+    const handle = await allocateUniqueHandle(ctx, externalHandle);
+    const applicationCode = await allocateUnclaimedApplicationCode(ctx);
+    const channelUrl = args.channelUrl?.trim();
+    const officialLinks = channelUrl
+      ? [{ label: args.platform, url: channelUrl }]
+      : args.sourceUrl.trim()
+        ? [{ label: "Source", url: args.sourceUrl.trim() }]
+        : [];
+
+    const creatorId = await ctx.db.insert("creators", {
+      applicationCode,
+      handle,
+      name: displayName,
+      bio: "",
+      country: "",
+      category: "Uncategorized",
+      platforms: [args.platform],
+      officialLinks,
+      verificationMethod: "connect",
+      applicantClerkId: "",
+      applicantName: "",
+      status: "unclaimed",
+      verified: false,
+      followers: 0,
+      totalSources: 0,
+      totalBarksReceived: 0,
+      responseRate: 0,
+      externalPlatform: args.platform,
+      externalHandle,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    return { creatorId };
+  },
+});
+
 export const getByHandle = query({
   args: { handle: v.string() },
   returns: v.union(creatorDoc, v.null()),
@@ -158,7 +364,7 @@ export const getByHandle = query({
       .query("creators")
       .withIndex("by_handle", (q) => q.eq("handle", args.handle))
       .unique();
-    if (!creator || creator.status !== "approved") return null;
+    if (!creator || !isPublicCreator(creator)) return null;
     return creator;
   },
 });
@@ -168,7 +374,7 @@ export const getById = query({
   returns: v.union(creatorDoc, v.null()),
   handler: async (ctx, args) => {
     const creator = await ctx.db.get(args.id);
-    if (!creator || creator.status !== "approved") return null;
+    if (!creator || !isPublicCreator(creator)) return null;
     return creator;
   },
 });
@@ -217,7 +423,7 @@ export const approve = mutation({
       recipientClerkId: creator.applicantClerkId,
       category: "verification",
       title: "Your creator profile was verified",
-      body: `@${creator.handle} is now live on TeaBarks.`,
+      body: `@${creator.handle} is now live on TypeReact.`,
       href: `/creators/${creator.handle}`,
     });
     const clerkId = clerkUserId(identity);

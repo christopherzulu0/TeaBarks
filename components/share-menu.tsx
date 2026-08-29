@@ -4,6 +4,7 @@ import { Check, Copy, Link2, Quote, Share2 } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { BRAND_NAME } from "@/lib/brand";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,8 +48,8 @@ export function ShareMenu({
 
   const cite =
     kind === "bark"
-      ? `${title} (${code}). TeaBarks. ${url}`
-      : `${title} (${code}). TeaBarks Accountability Case. ${url}`;
+      ? `${title} (${code}). ${BRAND_NAME}. ${url}`
+      : `${title} (${code}). ${BRAND_NAME} Accountability Case. ${url}`;
 
   const mark = (key: "code" | "url" | "cite") => {
     setCopied(key);
@@ -68,7 +69,7 @@ export function ShareMenu({
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={async () => {
-            if (await copyText(code, `${kind === "bark" ? "Bark" : "Case"} code copied`, "Paste into Search to find it.")) {
+            if (await copyText(code, `${kind === "bark" ? "Reaction" : "Case"} ID copied`, "Paste into Search to find it.")) {
               mark("code");
             }
           }}

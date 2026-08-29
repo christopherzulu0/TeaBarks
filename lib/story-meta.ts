@@ -246,7 +246,7 @@ export const genreMeta: Record<
     gradient: "from-orange-800/80 to-slate-900/80",
   },
   "teabarks-originals": {
-    label: "TeaBarks Originals",
+    label: "TypeReact Originals",
     icon: Leaf,
     description: "Stories commissioned and told here first.",
     gradient: "from-amber-600/80 to-orange-950/80",

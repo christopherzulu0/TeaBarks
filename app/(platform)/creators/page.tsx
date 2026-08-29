@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BadgeCheck } from "lucide-react";
-import { listApprovedCreators } from "@/app/actions/creators";
+import { listPublicCreators } from "@/app/actions/creators";
 import { CreatorsDirectory } from "@/components/creators/creators-directory";
 import { Button } from "@/components/ui/button";
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function CreatorsPage() {
-  const creators = await listApprovedCreators();
+  const creators = await listPublicCreators();
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
@@ -20,7 +20,7 @@ export default async function CreatorsPage() {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Creators</h1>
           <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            Public figures and publishers under discussion on TeaBarks — with
+            Public figures and publishers under discussion on TypeReact — with
             the right to claim their profile, respond officially, and face
             evidence on the record.
           </p>

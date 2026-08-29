@@ -31,7 +31,7 @@ function formatTime(ms: number) {
 }
 
 const kindLabel = {
-  bark: "Bark",
+  bark: "Reaction",
   case: "Case",
   creator: "Creator",
 } as const;
@@ -166,7 +166,7 @@ export function MessagesView() {
               title={inbox.length === 0 ? "No conversations yet" : "No matches"}
               description={
                 inbox.length === 0
-                  ? "Message someone from a bark, case, or creator page."
+                  ? "Message someone from a reaction, case, or creator page."
                   : "No matching conversations."
               }
             />
@@ -319,7 +319,7 @@ export function MessagesView() {
           <EmptyState
             icon={Mail}
             title="Select a conversation"
-            description="Private research coordination starts from a bark, case, or creator profile."
+            description="Private research coordination starts from a reaction, case, or creator profile."
           />
         </div>
       )}
@@ -333,7 +333,7 @@ export function MessagesView() {
           Messages
         </h1>
         <p className="hidden text-sm text-muted-foreground sm:block">
-          Private threads about a bark, case, or creator.
+          Private threads about a reaction, case, or creator.
         </p>
       </div>
       <div className="grid min-h-0 min-w-0 flex-1 overflow-hidden rounded-lg border md:grid-cols-[20rem_minmax(0,1fr)]">

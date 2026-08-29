@@ -65,7 +65,7 @@ export const toggleFollowAuthor = mutation({
       actorClerkId: clerkId,
       category: "follower",
       title: `${actorName} started following you`,
-      body: `${actorName} is now following your barks.`,
+      body: `${actorName} is now following your reactions.`,
       href: `/profile/${clerkId}`,
     });
     return { following: true };

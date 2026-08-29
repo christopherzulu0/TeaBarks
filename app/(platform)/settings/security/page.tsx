@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 
 const sessions = [
   { device: "Windows · Chrome", location: "Cairo, EG", current: true, last: "Now" },
-  { device: "iPhone 16 · TeaBarks App", location: "Cairo, EG", current: false, last: "2h ago" },
+  { device: "iPhone 16 · TypeReact App", location: "Cairo, EG", current: false, last: "2h ago" },
   { device: "MacBook · Safari", location: "Alexandria, EG", current: false, last: "3d ago" },
 ];
 

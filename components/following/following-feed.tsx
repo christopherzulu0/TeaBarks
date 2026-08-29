@@ -20,7 +20,7 @@ function FollowingHeader() {
     <div>
       <h1 className="text-2xl font-bold tracking-tight">Following</h1>
       <p className="text-sm text-muted-foreground">
-        The latest barks from researchers and creators you follow.
+        The latest reactions from researchers and creators you follow.
       </p>
     </div>
   );
@@ -67,11 +67,11 @@ function FollowingSignedIn() {
             <EmptyState
               icon={Users}
               title="You’re not following anyone yet"
-              description="Follow a barker on a bark, or a creator on their profile, to build this feed."
+              description="Follow a reactor on a reaction, or a creator on their profile, to build this feed."
               action={
                 <div className="flex flex-wrap justify-center gap-2">
                   <Button asChild size="sm">
-                    <Link href="/barks">Discover barks</Link>
+                    <Link href="/barks">Discover reactions</Link>
                   </Button>
                   <Button asChild size="sm" variant="outline">
                     <Link href="/creators">Discover creators</Link>
@@ -82,20 +82,20 @@ function FollowingSignedIn() {
           ) : feed.length === 0 ? (
             <EmptyState
               icon={Users}
-              title="No followed barks yet"
-              description="Barks from people you follow will appear here."
+              title="No followed reactions yet"
+              description="Reactions from people you follow will appear here."
             />
           ) : (
             feed.map((b) => <BarkCard key={b.id} bark={b} />)
           )}
         </div>
       </div>
-      <aside className="space-y-4 lg:sticky lg:top-20 lg:h-fit">
+      <aside className="space-y-4 lg:sticky lg:top-24 lg:h-fit">
         <Card className="gap-3 p-4">
-          <h2 className="text-sm font-semibold">Barkers you follow</h2>
+          <h2 className="text-sm font-semibold">Reactors you follow</h2>
           {followedAuthors.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Follow a bark author to see them here.
+              Follow a reaction author to see them here.
             </p>
           ) : (
             <ul className="space-y-3">
@@ -118,7 +118,7 @@ function FollowingSignedIn() {
             </ul>
           )}
           <Button asChild variant="outline" size="sm">
-            <Link href="/barks">Discover barks</Link>
+            <Link href="/barks">Discover reactions</Link>
           </Button>
         </Card>
         <Card className="gap-3 p-4">
@@ -166,7 +166,7 @@ export function FollowingFeed() {
           <EmptyState
             icon={Users}
             title="Sign in to see your feed"
-            description="Follow barkers and creators, then their latest barks show up here."
+            description="Follow reactors and creators, then their latest reactions show up here."
             action={
               <SignInButton>
                 <Button>Sign in</Button>

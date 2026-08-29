@@ -34,7 +34,7 @@ export function FollowBarkAuthorButton({
       onClick={() => {
         void (async () => {
           if (!isSignedIn) {
-            toast.message("Sign in to follow this barker");
+            toast.message("Sign in to follow this author");
             return;
           }
           try {
@@ -45,7 +45,7 @@ export function FollowBarkAuthorButton({
                 : `Unfollowed ${name}`,
               {
                 description: next.following
-                  ? "Their barks will show up in Following."
+                  ? "Their reactions will show up in Following."
                   : "Removed from your following feed.",
               }
             );

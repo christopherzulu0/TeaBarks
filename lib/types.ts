@@ -175,6 +175,7 @@ export interface Bark {
   sourcePlatform?: SourcePlatform;
   sourceUrl?: string;
   sourceCreatorName?: string;
+  sourceCreatorId?: string;
   sourceThumbnailUrl?: string;
   live?: boolean;
 }

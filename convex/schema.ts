@@ -67,6 +67,11 @@ export default defineSchema({
       "authorClerkId",
       "status",
       "publishedAt",
+    ])
+    .index("by_sourceCreator_status_publishedAt", [
+      "sourceCreatorId",
+      "status",
+      "publishedAt",
     ]),
   creatorReviews: defineTable(creatorReviewFields)
     .index("by_code", ["code"])
@@ -107,7 +112,8 @@ export default defineSchema({
     .index("by_handle", ["handle"])
     .index("by_status_createdAt", ["status", "createdAt"])
     .index("by_applicant", ["applicantClerkId"])
-    .index("by_applicationCode", ["applicationCode"]),
+    .index("by_applicationCode", ["applicationCode"])
+    .index("by_external_identity", ["externalPlatform", "externalHandle"]),
   creatorFollows: defineTable(creatorFollowFields)
     .index("by_creator_user", ["creatorId", "clerkUserId"])
     .index("by_user", ["clerkUserId"]),

@@ -40,7 +40,7 @@ const rules: {
   {
     title: "Hate speech and racism",
     severity: "severe",
-    body: "Content that attacks, demeans, or dehumanizes people based on race, ethnicity, or national origin is prohibited. This applies to slurs, racist stereotypes, coded language, and 'jokes' that rely on racial denigration. Documenting racist statements by a public figure as evidence in a bark or case is allowed; endorsing or repeating them as your own speech is not.",
+    body: "Content that attacks, demeans, or dehumanizes people based on race, ethnicity, or national origin is prohibited. This applies to slurs, racist stereotypes, coded language, and 'jokes' that rely on racial denigration. Documenting racist statements by a public figure as evidence in a reaction or case is allowed; endorsing or repeating them as your own speech is not.",
     examples: [
       "Slurs or epithets targeting a racial or ethnic group",
       "Claims that a race or ethnicity is inherently inferior or dangerous",
@@ -60,7 +60,7 @@ const rules: {
   {
     title: "Harassment and personal attacks",
     severity: "high",
-    body: "Debate the argument, not the person. Sustained insults, name-calling, pile-ons, sexual harassment, and threats are prohibited. Strong disagreement — including blunt criticism of a creator's public claims — is exactly what TeaBarks is for, but it must target the content, evidence, and reasoning.",
+    body: "Debate the argument, not the person. Sustained insults, name-calling, pile-ons, sexual harassment, and threats are prohibited. Strong disagreement — including blunt criticism of a creator's public claims — is exactly what TypeReact is for, but it must target the content, evidence, and reasoning.",
     examples: [
       "Insulting a user instead of addressing their evidence",
       "Coordinated pile-ons against an individual",
@@ -79,7 +79,7 @@ const rules: {
   {
     title: "Fabricated or manipulated evidence",
     severity: "severe",
-    body: "TeaBarks runs on evidence, so forging it is among the most serious violations. Doctored screenshots, selectively edited clips that reverse meaning, fake documents, and AI-generated 'proof' presented as real all qualify.",
+    body: "TypeReact runs on evidence, so forging it is among the most serious violations. Doctored screenshots, selectively edited clips that reverse meaning, fake documents, and AI-generated 'proof' presented as real all qualify.",
     examples: [
       "Edited screenshots presented as authentic",
       "Clips cut to invert what a speaker actually said",
@@ -89,7 +89,7 @@ const rules: {
   {
     title: "Misinformation presented as fact",
     severity: "high",
-    body: "Asserting demonstrably false claims as established fact — especially in barks and cases — violates our standards. Honest mistakes corrected via the version history are fine; repeated or willful misinformation is not.",
+    body: "Asserting demonstrably false claims as established fact — especially in reactions and cases — violates our standards. Honest mistakes corrected via the version history are fine; repeated or willful misinformation is not.",
     examples: [
       "Citing retracted studies as current science without disclosure",
       "Repeating debunked claims after correction",
@@ -98,9 +98,9 @@ const rules: {
   {
     title: "Spam and platform manipulation",
     severity: "moderate",
-    body: "Repetitive low-effort barks, engagement farming, vote manipulation, and coordinated inauthentic behavior are prohibited.",
+    body: "Repetitive low-effort reactions, engagement farming, vote manipulation, and coordinated inauthentic behavior are prohibited.",
     examples: [
-      "Mass-posting near-identical barks",
+      "Mass-posting near-identical reactions",
       "Networks of accounts boosting the same content",
     ],
   },

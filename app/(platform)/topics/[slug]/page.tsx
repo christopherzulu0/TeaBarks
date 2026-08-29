@@ -53,7 +53,7 @@ export default async function TopicPage(props: PageProps<"/topics/[slug]">) {
             {topic.description}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {formatNumber(topicBarks.length)} barks ·{" "}
+            {formatNumber(topicBarks.length)} reactions ·{" "}
             {formatNumber(caseCount)} accountability cases
           </p>
         </div>
@@ -76,11 +76,11 @@ export default async function TopicPage(props: PageProps<"/topics/[slug]">) {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold tracking-tight">Barks</h2>
+        <h2 className="text-lg font-semibold tracking-tight">Reactions</h2>
         {topicBarks.length === 0 ? (
           <EmptyState
             icon={FileText}
-            title="No barks in this topic yet"
+            title="No reactions in this topic yet"
             description="Start the first evidence-based discussion in this topic."
           />
         ) : (

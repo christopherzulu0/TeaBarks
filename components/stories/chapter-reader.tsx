@@ -93,7 +93,7 @@ export function ChapterReader({
     <div>
       {/* Sticky progress bar */}
       <div
-        className="sticky top-14 z-30 h-1 w-full bg-border/50 sm:top-20"
+        className="sticky top-16 z-30 h-1 w-full bg-border/50 sm:top-24"
         role="progressbar"
         aria-valuenow={Math.round(progress)}
         aria-valuemin={0}

@@ -10,7 +10,7 @@ export function HomeHeroActions() {
       <Button asChild size="lg">
         <Link href="/create">
           <PenSquare className="size-4" />
-          Create a Bark
+          Create Reaction
         </Link>
       </Button>
       <Button asChild variant="outline" size="lg">

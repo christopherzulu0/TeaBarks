@@ -81,6 +81,7 @@ export const create = mutation({
     sourceTitle: v.string(),
     sourcePlatform,
     sourceCreatorName: v.string(),
+    sourceCreatorId: v.optional(v.id("creators")),
     sourceThumbnailUrl: v.optional(v.string()),
     evidence: v.array(evidenceItem),
   },
@@ -138,6 +139,18 @@ export const create = mutation({
       .withIndex("by_user", (q) => q.eq("clerkUserId", authorClerkId))
       .unique();
     const country = settings?.country?.trim().toUpperCase();
+
+    let sourceCreatorId = args.sourceCreatorId;
+    if (sourceCreatorId) {
+      const creator = await ctx.db.get(sourceCreatorId);
+      if (
+        !creator ||
+        (creator.status !== "approved" && creator.status !== "unclaimed")
+      ) {
+        throw new Error("Source creator not found");
+      }
+    }
+
     await ctx.db.insert("barks", {
       code,
       type: args.type,
@@ -156,6 +169,7 @@ export const create = mutation({
       sourceTitle: args.sourceTitle,
       sourcePlatform: args.sourcePlatform,
       sourceCreatorName: args.sourceCreatorName,
+      ...(sourceCreatorId ? { sourceCreatorId } : {}),
       ...(args.sourceThumbnailUrl
         ? { sourceThumbnailUrl: args.sourceThumbnailUrl }
         : {}),
@@ -169,6 +183,27 @@ export const create = mutation({
       ...(country ? { country } : {}),
     });
 
+    if (sourceCreatorId && args.status === "public") {
+      const creator = await ctx.db.get(sourceCreatorId);
+      if (creator) {
+        const priorBarks = await ctx.db
+          .query("barks")
+          .withIndex("by_sourceCreator_status_publishedAt", (q) =>
+            q.eq("sourceCreatorId", sourceCreatorId).eq("status", "public")
+          )
+          .take(100);
+        const sourceUrl = args.sourceUrl.trim();
+        const isNewSource = !priorBarks.some(
+          (bark) => bark.sourceUrl.trim() === sourceUrl && bark.code !== code
+        );
+        await ctx.db.patch(sourceCreatorId, {
+          totalBarksReceived: creator.totalBarksReceived + 1,
+          totalSources: creator.totalSources + (isNewSource ? 1 : 0),
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
     return { code };
   },
 });
@@ -180,6 +215,23 @@ export const listPublic = query({
     const barks = await ctx.db
       .query("barks")
       .withIndex("by_status_publishedAt", (q) => q.eq("status", "public"))
+      .order("desc")
+      .take(50);
+    return await Promise.all(
+      barks.map((bark) => withResolvedEvidence(ctx, bark))
+    );
+  },
+});
+
+export const listBySourceCreator = query({
+  args: { creatorId: v.id("creators") },
+  returns: v.array(barkDoc),
+  handler: async (ctx, args) => {
+    const barks = await ctx.db
+      .query("barks")
+      .withIndex("by_sourceCreator_status_publishedAt", (q) =>
+        q.eq("sourceCreatorId", args.creatorId).eq("status", "public")
+      )
       .order("desc")
       .take(50);
     return await Promise.all(
@@ -513,7 +565,7 @@ export const toggleLike = mutation({
   handler: async (ctx, args) => {
     const identity = await requireIdentity(ctx);
     const bark = await barkByCode(ctx, args.code);
-    if (!bark) throw new Error("Bark not found");
+    if (!bark) throw new Error("Reaction not found");
     const clerkId = clerkUserId(identity);
     const existing = await ctx.db
       .query("barkLikes")
@@ -570,7 +622,7 @@ export const toggleSave = mutation({
   handler: async (ctx, args) => {
     const identity = await requireIdentity(ctx);
     const bark = await barkByCode(ctx, args.code);
-    if (!bark) throw new Error("Bark not found");
+    if (!bark) throw new Error("Reaction not found");
     const clerkId = clerkUserId(identity);
     const existing = await ctx.db
       .query("barkSaves")
@@ -654,7 +706,7 @@ export const addComment = mutation({
   handler: async (ctx, args) => {
     const identity = await requireIdentity(ctx);
     const bark = await barkByCode(ctx, args.code);
-    if (!bark) throw new Error("Bark not found");
+    if (!bark) throw new Error("Reaction not found");
     const body = args.body.trim();
     if (args.voiceStorageId && args.voiceDurationMs === undefined) {
       throw new Error("Voice duration is required");
@@ -720,7 +772,7 @@ export const addComment = mutation({
     await notifyMany(ctx, [...replyTargets], {
       actorClerkId: authorClerkId,
       category: "reply",
-      title: `${authorName} replied to your Bark`,
+      title: `${authorName} replied to your reaction`,
       body: snippet,
       href,
     });
@@ -748,7 +800,7 @@ export const submitReport = mutation({
   handler: async (ctx, args) => {
     const identity = await requireIdentity(ctx);
     const bark = await barkByCode(ctx, args.code);
-    if (!bark) throw new Error("Bark not found");
+    if (!bark) throw new Error("Reaction not found");
     if (args.targetKind === "comment") {
       const comment = await ctx.db.get(args.targetId as Id<"barkComments">);
       if (!comment || comment.barkId !== bark._id) {

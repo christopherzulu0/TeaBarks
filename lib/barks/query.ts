@@ -46,7 +46,7 @@ export function toUiBark(doc: Doc<"barks">): Bark {
     id: doc._id,
     code: doc.code,
     type: (doc.type || "mixed") as BarkType,
-    title: doc.title || "Untitled Bark",
+    title: doc.title || "Untitled Reaction",
     authorId: doc.authorClerkId,
     sourceId: `convex-source:${doc.code}`,
     publishedAt: doc.publishedAt ? new Date(doc.publishedAt).toISOString() : new Date().toISOString(),
@@ -68,6 +68,7 @@ export function toUiBark(doc: Doc<"barks">): Bark {
     sourcePlatform: doc.sourcePlatform as SourcePlatform,
     sourceUrl: doc.sourceUrl,
     sourceCreatorName: doc.sourceCreatorName,
+    sourceCreatorId: doc.sourceCreatorId,
     sourceThumbnailUrl: doc.sourceThumbnailUrl,
     live: true,
   };

@@ -42,7 +42,7 @@ export function CreatorFollowButton({
               next.following ? `Following ${name}` : `Unfollowed ${name}`,
               {
                 description: next.following
-                  ? "You'll see new barks about this creator."
+                  ? "You'll see new reactions about this creator."
                   : "Removed from your following feed.",
               }
             );

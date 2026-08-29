@@ -14,7 +14,7 @@ const options = [
   {
     id: "publicProfile" as const,
     label: "Public profile",
-    description: "Anyone can view your profile, barks, and evidence history.",
+    description: "Anyone can view your profile, reactions, and evidence history.",
   },
   {
     id: "showCountry" as const,
@@ -24,7 +24,7 @@ const options = [
   {
     id: "searchable" as const,
     label: "Appear in search engines",
-    description: "Allow your public barks to be indexed outside TeaBarks.",
+    description: "Allow your public reactions to be indexed outside TypeReact.",
   },
   {
     id: "dmAnyone" as const,

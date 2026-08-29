@@ -18,6 +18,8 @@ import {
   UserCircle,
 } from "lucide-react";
 import { BrandLogo } from "@/components/shell/brand-logo";
+import { SHELL_HEADER_HEIGHT } from "@/lib/shell";
+import { cn } from "@/lib/utils";
 import { CommandMenu } from "@/components/shell/command-menu";
 import { SidebarNav } from "@/components/shell/sidebar-nav";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
@@ -40,11 +42,11 @@ function Logo() {
     <Link
       href="/"
       className="flex shrink-0 items-center rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
-      aria-label="TeaBarks home"
+      aria-label="TypeReact home"
     >
       <BrandLogo
         alt=""
-        className="h-12 w-auto sm:h-16 lg:h-[4.5rem]"
+        className="h-auto w-52 object-contain sm:w-[18rem] lg:w-[20rem]"
       />
     </Link>
   );
@@ -56,7 +58,7 @@ export function TopNav() {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-14 items-center gap-2 px-3 sm:h-20 sm:gap-3 sm:px-4 lg:px-6">
+      <div className={cn("flex items-center gap-2 px-3 sm:gap-3 sm:px-4 lg:px-6", SHELL_HEADER_HEIGHT)}>
         <div className="flex min-w-0 items-center gap-1 sm:gap-2">
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
@@ -72,7 +74,7 @@ export function TopNav() {
             <SheetContent side="left" className="w-72 p-0">
               <SheetHeader className="border-b px-4 py-4">
                 <SheetTitle className="flex items-center text-left">
-                  <BrandLogo className="h-auto w-full max-w-[14rem]" />
+                  <BrandLogo className="h-auto w-full max-w-[20rem]" />
                 </SheetTitle>
               </SheetHeader>
               <SidebarNav onNavigate={() => setSheetOpen(false)} />
@@ -142,7 +144,7 @@ export function TopNav() {
                 />
                 <UserButton.Link
                   href="/saved"
-                  label="Saved Barks"
+                  label="Saved Reactions"
                   labelIcon={<Bookmark className="size-4" />}
                 />
                 {/*<UserButton.Link*/}

@@ -18,7 +18,7 @@ export type ActivityPoint = {
 };
 
 const config = {
-  barks: { label: "Barks", color: "var(--chart-1)" },
+  barks: { label: "Reactions", color: "var(--chart-1)" },
   cases: { label: "Cases", color: "var(--chart-3)" },
   evidence: { label: "Evidence items", color: "var(--chart-2)" },
 } satisfies ChartConfig;

@@ -622,7 +622,7 @@ export const barks: Bark[] = [
       { kind: "heading", text: "What a fair version of this video would say" },
       {
         kind: "paragraph",
-        text: "There is genuinely interesting early-stage research on fasting, and some human results are promising for specific metabolic markers. A responsible summary would say exactly that. Instead, the video's framing — 'cures more than medicine' — invites viewers to substitute fasting for prescribed treatment, which the cited evidence cannot support. I've invited Dr. Wu to respond and will attach any reply to this Bark.",
+        text: "There is genuinely interesting early-stage research on fasting, and some human results are promising for specific metabolic markers. A responsible summary would say exactly that. Instead, the video's framing — 'cures more than medicine' — invites viewers to substitute fasting for prescribed treatment, which the cited evidence cannot support. I've invited Dr. Wu to respond and will attach any reply to this reaction.",
       },
     ],
     evidence: [
@@ -747,7 +747,7 @@ export const barks: Bark[] = [
       },
       {
         kind: "paragraph",
-        text: "Verdict: Agree. The mechanism is real, documented, and material — roughly a third of the index weight. This is exactly the kind of claim TeaBarks exists for: checkable, sourced, and consequential.",
+        text: "Verdict: Agree. The mechanism is real, documented, and material — roughly a third of the index weight. This is exactly the kind of claim TypeReact exists for: checkable, sourced, and consequential.",
       },
     ],
     evidence: [
@@ -825,7 +825,7 @@ export const barks: Bark[] = [
     sourceId: "s-quietbook",
     publishedAt: "2026-07-02",
     excerpt:
-      "Sofia Reyes' book gives genuinely good behavioral advice — and then undermines it with compounding examples that assume 12% annual returns and ignore fees entirely. Both things are true, so this is a Mixed bark.",
+      "Sofia Reyes' book gives genuinely good behavioral advice — and then undermines it with compounding examples that assume 12% annual returns and ignore fees entirely. Both things are true, so this is a Mixed reaction.",
     content: [
       {
         kind: "paragraph",
@@ -881,7 +881,7 @@ export const barks: Bark[] = [
     content: [
       {
         kind: "paragraph",
-        text: "The study exists. It recommends up to 2.2 grams per kilogram of bodyweight for athletes in a cutting phase — which for an 80kg lifter is 176 grams, not 300. Somewhere between the paper and the TikTok, 'per kilogram' fell off. This bark reconstructs where.",
+        text: "The study exists. It recommends up to 2.2 grams per kilogram of bodyweight for athletes in a cutting phase — which for an 80kg lifter is 176 grams, not 300. Somewhere between the paper and the TikTok, 'per kilogram' fell off. This reaction reconstructs where.",
       },
       { kind: "heading", text: "The mutation chain" },
       {
@@ -1265,7 +1265,7 @@ export const replies: Reply[] = [
     barkId: "b-1",
     authorId: "u-priya",
     content:
-      "Used this bark in my research methods class as a live example of citation auditing. Students found a 13th study mentioned verbally at 27:50 that never appears on the citation slide — a human trial that actually contradicts the thesis. Adding the timestamp here.",
+      "Used this reaction in my research methods class as a live example of citation auditing. Students found a 13th study mentioned verbally at 27:50 that never appears on the citation slide — a human trial that actually contradicts the thesis. Adding the timestamp here.",
     postedAt: "2026-07-14",
     reactions: { insightful: 240, agree: 187, disagree: 1 },
     evidence: [
@@ -1278,7 +1278,7 @@ export const replies: Reply[] = [
     barkId: "b-4",
     authorId: "u-jae",
     content:
-      "The steelman section is what makes this bark. Too many debunks stop at 'no source found' — actually reconstructing the least-wrong path to the number and showing it still fails is much stronger.",
+      "The steelman section is what makes this reaction. Too many debunks stop at 'no source found' — actually reconstructing the least-wrong path to the number and showing it still fails is much stronger.",
     postedAt: "2026-08-02",
     reactions: { insightful: 132, agree: 145, disagree: 2 },
   },
@@ -1330,7 +1330,7 @@ export const replies: Reply[] = [
     authorId: "u-jae",
     parentId: "r-10",
     content:
-      "That's the plan — quarterly update barks, each one checking the two trackable links against new data. First one lands in October.",
+      "That's the plan — quarterly update reactions, each one checking the two trackable links against new data. First one lands in October.",
     postedAt: "2026-07-22",
     reactions: { insightful: 41, agree: 66, disagree: 0 },
     mentions: ["lenameyer"],
@@ -1351,7 +1351,7 @@ export const replies: Reply[] = [
     barkId: "b-3",
     authorId: "u-yassin",
     content:
-      "The mirror-image caveat is the most important paragraph here. Methodology arguments that only get deployed in one direction are marketing, not analysis. Bookmarking this as the reference bark for shelter-lag claims.",
+      "The mirror-image caveat is the most important paragraph here. Methodology arguments that only get deployed in one direction are marketing, not analysis. Bookmarking this as the reference reaction for shelter-lag claims.",
     postedAt: "2026-07-30",
     reactions: { insightful: 76, agree: 92, disagree: 1 },
   },
@@ -1397,7 +1397,7 @@ export const cases: AccountabilityCase[] = [
     evidence: [
       ev("ce-1", "document", "Four-dataset turnout comparison", "Voter file aggregation, two academic surveys, and exit poll consortium — all showing declines between 2 and 6.8 points.", { url: "https://docs.example.org/turnout-comparison" }),
       ev("ce-2", "screenshot", "Archived post with view count", "Full-resolution archive taken 2026-08-02, 14:20 UTC, showing 8.1M views."),
-      ev("ce-3", "link", "Source request sent to creator", "Formal request via TeaBarks creator contact and public reply, no response as of 2026-08-05.", { url: "https://x.com/marcushale/status/9982117" }),
+      ev("ce-3", "link", "Source request sent to creator", "Formal request via TypeReact creator contact and public reply, no response as of 2026-08-05.", { url: "https://x.com/marcushale/status/9982117" }),
       ev("ce-4", "screenshot", "Prior deletion pattern", "Screenshots of two previously corrected-then-deleted posts ('empty stadium' photo, misdated debate clip).", { addedById: "u-nadia" }),
       ev("ce-5", "document", "Possible origin: county-level report", "Single university-town county showing a 38% relative decline — demographically anomalous, cannot support the national claim.", { addedById: "u-tomas" }),
     ],
@@ -1672,14 +1672,14 @@ export const organization: Organization = {
 /* ------------------------------------------------------------------ */
 
 export const notifications: Notification[] = [
-  { id: "n-1", category: "creator-response", title: "FutureSight Lab responded to a Bark you follow", body: "\"This is the response our video deserved, honestly. We accept the framing of assumptions 1 and 2 as trackable bets…\"", time: "2026-08-05T14:20:00", read: false, href: "/barks/BRK-2026-0356" },
-  { id: "n-2", category: "reply", title: "Nadia Rahman replied to your Bark", body: "On \"The '40% youth turnout collapse' number doesn't exist in any dataset\" — pattern documentation comment.", time: "2026-08-05T09:41:00", read: false, href: "/barks/BRK-2026-0371" },
+  { id: "n-1", category: "creator-response", title: "FutureSight Lab responded to a reaction you follow", body: "\"This is the response our video deserved, honestly. We accept the framing of assumptions 1 and 2 as trackable bets…\"", time: "2026-08-05T14:20:00", read: false, href: "/barks/BRK-2026-0356" },
+  { id: "n-2", category: "reply", title: "Nadia Rahman replied to your reaction", body: "On \"The '40% youth turnout collapse' number doesn't exist in any dataset\" — pattern documentation comment.", time: "2026-08-05T09:41:00", read: false, href: "/barks/BRK-2026-0371" },
   { id: "n-3", category: "evidence", title: "New evidence added to CASE-2026-0088", body: "Tomás Vela filed \"Possible origin: county-level report\" to the Marcus Hale turnout case.", time: "2026-08-04T18:03:00", read: false, href: "/cases/CASE-2026-0088" },
   { id: "n-4", category: "mention", title: "Tomás Vela mentioned you", body: "\"…@yassinhaddad's archive is timestamped, so the deletion question is already covered.\"", time: "2026-08-04T11:27:00", read: true, href: "/barks/BRK-2026-0371" },
   { id: "n-5", category: "follower", title: "Lena Meyer started following you", body: "Climate scientist turned communicator. 11.2K followers.", time: "2026-08-03T20:15:00", read: true, href: "/creators" },
   { id: "n-6", category: "verification", title: "Your evidence was verified", body: "\"Turnout dataset comparison\" passed moderator source verification in CASE-2026-0088.", time: "2026-08-03T13:52:00", read: true, href: "/cases/CASE-2026-0088" },
   { id: "n-7", category: "evidence", title: "Case status changed: CASE-2026-0069", body: "The 300g protein case was resolved after the creator posted an acknowledgment.", time: "2026-08-04T08:30:00", read: true, href: "/cases/CASE-2026-0069" },
-  { id: "n-8", category: "reply", title: "Jae Kim replied to your Bark", body: "\"The steelman section is what makes this bark…\"", time: "2026-08-02T16:44:00", read: true, href: "/barks/BRK-2026-0371" },
+  { id: "n-8", category: "reply", title: "Jae Kim replied to your reaction", body: "\"The steelman section is what makes this reaction…\"", time: "2026-08-02T16:44:00", read: true, href: "/barks/BRK-2026-0371" },
   { id: "n-9", category: "follower", title: "Priya Sharma started following you", body: "Education researcher. 6.9K followers.", time: "2026-08-01T10:12:00", read: true, href: "/creators" },
   { id: "n-10", category: "creator-response", title: "Dr. Helen Wu responded to CASE-2026-0074", body: "\"…the title overstates what the human trials show — that framing was a mistake and I own it.\"", time: "2026-07-22T15:08:00", read: true, href: "/cases/CASE-2026-0074" },
 ];
@@ -1716,8 +1716,8 @@ export const conversations: Conversation[] = [
     unread: 1,
     messages: [
       { id: "msg-8", senderId: "u-lena", text: "Q3 grid data is out. 41 km commissioned. The 2032 case basically writes its own checkpoints now.", sentAt: "2026-08-01T09:15:00", read: true },
-      { id: "msg-9", senderId: "u-yassin", text: "That's 12% of the required pace. Add the checkpoint and I'll cross-link it from the trade bill bark — same ministry.", sentAt: "2026-08-01T09:22:00", read: true },
-      { id: "msg-10", senderId: "u-lena", text: "Checkpoint filed. Also drafting a joint bark on the permitting bottleneck if you want in — your bill-reading skills would help.", sentAt: "2026-08-01T09:40:00", read: false, attachment: { name: "q3-grid-checkpoint.xlsx", type: "doc" } },
+      { id: "msg-9", senderId: "u-yassin", text: "That's 12% of the required pace. Add the checkpoint and I'll cross-link it from the trade bill reaction — same ministry.", sentAt: "2026-08-01T09:22:00", read: true },
+      { id: "msg-10", senderId: "u-lena", text: "Checkpoint filed. Also drafting a joint reaction on the permitting bottleneck if you want in — your bill-reading skills would help.", sentAt: "2026-08-01T09:40:00", read: false, attachment: { name: "q3-grid-checkpoint.xlsx", type: "doc" } },
     ],
   },
   {

@@ -124,7 +124,7 @@ export const orgRoleMeta: Record<
   owner: { label: "Owner", description: "Full access to everything, including billing and deletion." },
   admin: { label: "Admin", description: "Management access: members, settings, and all content." },
   editor: { label: "Editor", description: "Reviews and approves content before publication." },
-  writer: { label: "Writer", description: "Creates drafts of Barks and case analyses." },
+  writer: { label: "Writer", description: "Creates drafts of reactions and case analyses." },
   researcher: { label: "Researcher", description: "Manages evidence collections and source verification." },
   viewer: { label: "Viewer", description: "Read-only access to the organization workspace." },
 };

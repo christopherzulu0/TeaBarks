@@ -27,7 +27,7 @@ export function LikeButton({
 
   const onClick = async () => {
     if (!isSignedIn) {
-      toast.error("Sign in to like this bark.");
+      toast.error("Sign in to like this reaction.");
       return;
     }
     try {

@@ -12,7 +12,7 @@ export function CreateBarkButton() {
         <SignInButton>
           <Button size="sm" className="hidden sm:inline-flex">
             <PenSquare className="size-4" />
-            Create Bark
+            Create Reaction
           </Button>
         </SignInButton>
       </Show>
@@ -20,7 +20,7 @@ export function CreateBarkButton() {
         <Button asChild size="sm" className="hidden sm:inline-flex">
           <Link href="/create">
             <PenSquare className="size-4" />
-            Create Bark
+            Create Reaction
           </Link>
         </Button>
       </Show>

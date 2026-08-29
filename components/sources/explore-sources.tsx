@@ -21,7 +21,7 @@ export function ExploreSources({
       <EmptyState
         icon={FileText}
         title="No sources yet"
-        description="When barks are published, their original sources will show up here."
+        description="When reactions are published, their original sources will show up here."
       />
     );
   }

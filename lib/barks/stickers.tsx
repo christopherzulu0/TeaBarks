@@ -145,7 +145,7 @@ export const barkStickers: {
   Icon: ComponentType<SVGProps<SVGSVGElement>>;
 }[] = [
   { id: "tea", label: "Tea", Icon: TeaIcon },
-  { id: "bark", label: "Bark", Icon: BarkIcon },
+  { id: "bark", label: "Reaction", Icon: BarkIcon },
   { id: "evidence", label: "Evidence", Icon: EvidenceIcon },
   { id: "agree", label: "Agree", Icon: AgreeIcon },
   { id: "disagree", label: "Disagree", Icon: DisagreeIcon },

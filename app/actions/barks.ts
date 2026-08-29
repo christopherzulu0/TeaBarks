@@ -5,7 +5,9 @@ import { fetchMutation, fetchQuery } from "convex/nextjs";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { toUiBark } from "@/lib/barks/query";
+import { ensureUnclaimedCreatorAction } from "@/app/actions/creators";
 import { getConvexClerkToken } from "@/lib/convex-clerk";
+import { resolveExternalIdentity } from "@/lib/creators/external-identity";
 import { toUiSource } from "@/lib/sources/query";
 import type { Bark, BarkType, EvidenceType, Source, SourcePlatform } from "@/lib/types";
 
@@ -18,6 +20,7 @@ export type PublishBarkInput = {
   sourceTitle: string;
   sourcePlatform: SourcePlatform;
   sourceCreatorName: string;
+  sourceCreatorId?: string;
   sourceThumbnailUrl?: string;
   evidence: {
     type: EvidenceType;
@@ -30,11 +33,34 @@ export type PublishBarkInput = {
 };
 
 export async function publishBark(input: PublishBarkInput): Promise<{ code: string }> {
-  const token = await getConvexClerkToken("publish a bark");
+  const token = await getConvexClerkToken("publish a reaction");
+
+  let sourceCreatorId: Id<"creators"> | undefined = input.sourceCreatorId
+    ? (input.sourceCreatorId as Id<"creators">)
+    : undefined;
+  if (!sourceCreatorId && input.status === "public") {
+    const identity = resolveExternalIdentity({
+      url: input.sourceUrl,
+      platform: input.sourcePlatform,
+      authorName: input.sourceCreatorName,
+    });
+    if (identity) {
+      const ensured = await ensureUnclaimedCreatorAction({
+        url: input.sourceUrl,
+        platform: input.sourcePlatform,
+        authorName: input.sourceCreatorName,
+      });
+      if (ensured) sourceCreatorId = ensured.id as Id<"creators">;
+    }
+  }
+
+  const { sourceCreatorId: _inputCreatorId, ...publishInput } = input;
+
   return await fetchMutation(
     api.barks.create,
     {
-      ...input,
+      ...publishInput,
+      ...(sourceCreatorId ? { sourceCreatorId } : {}),
       evidence: input.evidence.map((item) => ({
         type: item.type,
         title: item.title,
@@ -110,10 +136,24 @@ export async function getBarkByCodeAction(code: string): Promise<Bark | null> {
 
 export async function listMyBarks(): Promise<Bark[]> {
   try {
-    const token = await getConvexClerkToken("view your barks");
+    const token = await getConvexClerkToken("view your reactions");
     const docs = await fetchQuery(api.barks.listMine, {}, { token });
     return docs.map(toUiBark);
   } catch {
+    return [];
+  }
+}
+
+export async function listBarksBySourceCreator(
+  creatorId: string
+): Promise<Bark[]> {
+  try {
+    const docs = await fetchQuery(api.barks.listBySourceCreator, {
+      creatorId: creatorId as Id<"creators">,
+    });
+    return docs.map(toUiBark);
+  } catch (error) {
+    console.error("Failed to list barks by source creator:", error);
     return [];
   }
 }

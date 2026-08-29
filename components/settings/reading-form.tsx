@@ -41,7 +41,7 @@ export function ReadingForm() {
         </SelectContent>
       </Select>
       <p className="text-xs text-muted-foreground">
-        Applies to bark analysis, story chapters, case files, and creator
+        Applies to reaction analysis, story chapters, case files, and creator
         reviews. Saved in this browser.
       </p>
     </div>

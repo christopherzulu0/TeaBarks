@@ -12,7 +12,7 @@ import {
 
 const config = {
   users: { label: "Users", color: "var(--chart-1)" },
-  barks: { label: "Barks", color: "var(--chart-2)" },
+  barks: { label: "Reactions", color: "var(--chart-2)" },
   cases: { label: "Cases", color: "var(--chart-3)" },
   stories: { label: "Stories", color: "var(--chart-4)" },
 } satisfies ChartConfig;

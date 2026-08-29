@@ -40,7 +40,7 @@ export function CreatorsDirectory({
 }: {
   initialCreators: Creator[];
 }) {
-  const docs = useQuery(api.creators.listApproved);
+  const docs = useQuery(api.creators.listPublic);
   const creators = docs ? docs.map(toUiCreator) : initialCreators;
   const [query, setQuery] = React.useState("");
   const [topic, setTopic] = React.useState(ANY);
@@ -225,7 +225,7 @@ export function CreatorsDirectory({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="followers">Most followers</SelectItem>
-              <SelectItem value="barks">Most barks</SelectItem>
+              <SelectItem value="barks">Most reactions</SelectItem>
               <SelectItem value="response">Best response rate</SelectItem>
               <SelectItem value="name">Name A–Z</SelectItem>
             </SelectContent>

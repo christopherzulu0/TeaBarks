@@ -584,7 +584,7 @@ export function CaseFile({
           </section>
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-20 lg:h-fit">
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:h-fit">
           <CiteEmbed
             kind="case"
             code={c.code}

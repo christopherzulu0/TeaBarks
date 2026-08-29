@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CreatorProfile } from "@/components/creators/creator-profile";
-import { listPublicBarks } from "@/app/actions/barks";
+import { listBarksBySourceCreator, listPublicBarks } from "@/app/actions/barks";
 import { listCreatorReviewsByCreator } from "@/app/actions/creator-reviews";
 import { listCases } from "@/app/actions/cases";
 import { getCreatorByHandleAction } from "@/app/actions/creators";
@@ -26,20 +26,25 @@ export default async function CreatorPage(
   const creator = await getCreatorByHandleAction(handle);
   if (!creator) notFound();
 
-  const [publishedBarks, publishedCases, reviews] = await Promise.all([
-    listPublicBarks(),
-    listCases(),
-    listCreatorReviewsByCreator(creator.id),
-  ]);
+  const [barksByCreator, publishedBarks, publishedCases, reviews] =
+    await Promise.all([
+      listBarksBySourceCreator(creator.id),
+      listPublicBarks(),
+      listCases(),
+      listCreatorReviewsByCreator(creator.id),
+    ]);
   const handleKey = creator.handle.toLowerCase();
-  const barksAbout = publishedBarks.filter((b) => {
-    const name = b.sourceCreatorName?.toLowerCase();
-    return (
-      b.sourceCreatorName === creator.name ||
-      name === handleKey ||
-      name === creator.name.toLowerCase()
-    );
-  });
+  const barksAbout =
+    barksByCreator.length > 0
+      ? barksByCreator
+      : publishedBarks.filter((b) => {
+          const name = b.sourceCreatorName?.toLowerCase();
+          return (
+            b.sourceCreatorName === creator.name ||
+            name === handleKey ||
+            name === creator.name.toLowerCase()
+          );
+        });
   const creatorCases = publishedCases.filter(
     (c) =>
       c.creatorId === creator.id ||

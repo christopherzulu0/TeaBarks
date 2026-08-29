@@ -17,8 +17,8 @@ export function ExploreBarks({ initialBarks }: { initialBarks: Bark[] }) {
     return (
       <EmptyState
         icon={MessageSquare}
-        title="No published barks yet"
-        description="When someone publishes a bark, it will show up here."
+        title="No published reactions yet"
+        description="When someone publishes a reaction, it will show up here."
       />
     );
   }

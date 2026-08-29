@@ -13,7 +13,7 @@ export default function NotFound() {
           This page doesn&apos;t exist
         </h1>
         <p className="max-w-md text-sm text-muted-foreground">
-          The bark, case, or profile you&apos;re looking for may have been moved,
+          The reaction, case, or profile you&apos;re looking for may have been moved,
           renamed, or never existed. Check the code and try again.
         </p>
       </div>

@@ -77,7 +77,7 @@ async function subjectMeta(
         subjectHref: `/barks/${bark.code}`,
       };
     }
-    return { subjectTitle: "Deleted bark", subjectHref: "/barks" };
+    return { subjectTitle: "Deleted reaction", subjectHref: "/barks" };
   }
   if (thread.subjectKind === "case" && thread.caseId) {
     const accountabilityCase = await ctx.db.get(thread.caseId);
@@ -114,12 +114,12 @@ async function resolveOtherParty(
 ) {
   if (args.kind === "bark") {
     const code = args.barkCode?.trim();
-    if (!code) throw new Error("Bark code is required");
+    if (!code) throw new Error("Reaction ID is required");
     const bark = await ctx.db
       .query("barks")
       .withIndex("by_code", (q) => q.eq("code", code))
       .unique();
-    if (!bark || bark.status !== "public") throw new Error("Bark not found");
+    if (!bark || bark.status !== "public") throw new Error("Reaction not found");
     return {
       otherClerkId: bark.authorClerkId,
       barkId: bark._id,

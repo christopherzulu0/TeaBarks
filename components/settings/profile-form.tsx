@@ -49,7 +49,7 @@ export function ProfileForm() {
         <CardHeader>
           <CardTitle>Profile</CardTitle>
           <CardDescription>
-            How you appear across barks, cases, and replies.
+            How you appear across reactions, cases, and replies.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -181,7 +181,7 @@ export function ProfileForm() {
               ? "Publish serialized fiction from your writer dashboard."
               : writerApp?.status === "pending"
                 ? "Your writing sample is under review."
-                : "Publish serialized fiction on TeaBarks Stories. Submit a short writing sample to unlock the writer dashboard, contests, and publishing tools."}
+                : "Publish serialized fiction on TypeReact Stories. Submit a short writing sample to unlock the writer dashboard, contests, and publishing tools."}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -212,8 +212,8 @@ export function ProfileForm() {
           </CardTitle>
           <CardDescription>
             {creator
-              ? `@${creator.handle} is live. Respond officially to barks and cases about your content.`
-              : "Do you publish content on YouTube, TikTok, podcasts, or elsewhere? Verify channel ownership to get the verified badge and respond officially to barks and accountability cases about your content."}
+              ? `@${creator.handle} is live. Respond officially to reactions and cases about your content.`
+              : "Do you publish content on YouTube, TikTok, podcasts, or elsewhere? Verify channel ownership to get the verified badge and respond officially to reactions and accountability cases about your content."}
           </CardDescription>
         </CardHeader>
         <CardContent>

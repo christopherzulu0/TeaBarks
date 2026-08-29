@@ -4,6 +4,7 @@ import { MessageSquare, Scale } from "lucide-react";
 import { EvidenceRating } from "@/components/evidence-rating";
 import { PersonAvatar } from "@/components/person-avatar";
 import { ViewOriginalSourceLink } from "@/components/sources/view-original-source-link";
+import { SourceActionBar } from "@/components/sources/source-action-bar";
 import { SourceThumb } from "@/components/source-thumb";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { Badge } from "@/components/ui/badge";
@@ -48,11 +49,16 @@ export function SourceCard({
   source,
   className,
   mobileSourceLinkActions = false,
+  showActionBar = false,
+  discussionCode,
 }: {
   source: Source;
   className?: string;
   /** Mobile: inline watch/copy panel instead of navigating straight to the URL. */
   mobileSourceLinkActions?: boolean;
+  /** Always-visible watch / copy / read discussion row (home page). */
+  showActionBar?: boolean;
+  discussionCode?: string;
 }) {
   const creator = source.creatorId
     ? getCreator(source.creatorId)
@@ -126,7 +132,14 @@ export function SourceCard({
             {source.title}
           </SourceLink>
         )}
-        {mobileSourceLinkActions && source.url ? (
+        {showActionBar && source.url ? (
+          <SourceActionBar
+            url={source.url}
+            platform={source.platform}
+            discussionCode={discussionCode}
+          />
+        ) : null}
+        {mobileSourceLinkActions && source.url && !showActionBar ? (
           <ViewOriginalSourceLink
             url={source.url}
             platform={source.platform}
@@ -160,7 +173,7 @@ export function SourceCard({
         <div className="flex items-center justify-between border-t pt-2.5 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <MessageSquare className="size-3.5" aria-hidden />
-            {formatNumber(source.barkCount)} Barks
+            {formatNumber(source.barkCount)} Reactions
           </span>
           {source.caseCount > 0 && (
             <span className="inline-flex items-center gap-1">

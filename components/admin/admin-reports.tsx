@@ -31,7 +31,7 @@ export function AdminReports() {
         <EmptyState
           icon={Flag}
           title="No reports"
-          description="Bark, case, and story reports appear here for review."
+          description="Reaction, case, and story reports appear here for review."
         />
       ) : (
         <div className="min-w-0 overflow-x-auto rounded-lg border">

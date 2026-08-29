@@ -1,0 +1,73 @@
+import { parsePublicUrl } from "@/lib/detect-source";
+import {
+  normalizeCreatorKey,
+  platformHandleFromUrl,
+} from "@/lib/creators/match-source";
+import type { SourcePlatform } from "@/lib/types";
+
+export type ExternalIdentity = {
+  platform: SourcePlatform;
+  externalHandle: string;
+  displayName: string;
+};
+
+function titleCaseHandle(handle: string) {
+  return handle
+    .split(/[-_]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+export function resolveExternalIdentity(input: {
+  url: string;
+  platform: SourcePlatform;
+  authorName?: string;
+}): ExternalIdentity | null {
+  const parsed = parsePublicUrl(input.url);
+  const authorName = input.authorName?.trim();
+
+  let externalHandle = "";
+  if (parsed) {
+    const fromUrl = platformHandleFromUrl(parsed, input.platform);
+    if (fromUrl) externalHandle = normalizeCreatorKey(fromUrl);
+  }
+  if (!externalHandle && authorName) {
+    externalHandle = normalizeCreatorKey(authorName);
+  }
+  if (!externalHandle) return null;
+
+  const displayName =
+    authorName || titleCaseHandle(externalHandle) || externalHandle;
+
+  return {
+    platform: input.platform,
+    externalHandle,
+    displayName,
+  };
+}
+
+export function channelUrlFromSource(
+  url: string,
+  platform: SourcePlatform
+): string | null {
+  const parsed = parsePublicUrl(url);
+  if (!parsed) return null;
+  const handle = platformHandleFromUrl(parsed, platform);
+  if (!handle) return null;
+
+  switch (platform) {
+    case "youtube":
+      return `https://youtube.com/@${handle}`;
+    case "tiktok":
+      return `https://tiktok.com/@${handle}`;
+    case "instagram":
+      return `https://instagram.com/${handle}`;
+    case "x":
+      return `https://x.com/${handle}`;
+    case "facebook":
+      return `https://facebook.com/${handle}`;
+    default:
+      return parsed.href;
+  }
+}

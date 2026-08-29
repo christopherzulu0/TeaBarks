@@ -100,7 +100,7 @@ export function ReportDialog({
     }
     toast.success("Report submitted", {
       description:
-        "Our moderation team will review it and notify you of the outcome. Thank you for keeping TeaBarks safe.",
+        "Our moderation team will review it and notify you of the outcome. Thank you for keeping TypeReact safe.",
     });
     onOpenChange(false);
     setCategory(null);

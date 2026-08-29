@@ -31,7 +31,7 @@ export function WritersToFollow({ stories }: { stories: UiStory[] }) {
           Writers to follow
         </h2>
         <p className="text-sm text-muted-foreground">
-          Authors publishing on TeaBarks Stories.
+          Authors publishing on TypeReact Stories.
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">

@@ -250,7 +250,7 @@ export function SearchView({
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Search</h1>
         <p className="text-sm text-muted-foreground">
-          Find barks, cases, and creators by claim, code, or keyword.
+          Find reactions, cases, and creators by claim, code, or keyword.
         </p>
       </div>
 
@@ -265,7 +265,7 @@ export function SearchView({
           onKeyDown={(e) => {
             if (e.key === "Enter") goToExactCode();
           }}
-          placeholder="Search claims, titles, Bark Codes (BRK-…), Case Codes (CASE-…)…"
+          placeholder="Search claims, titles, Reaction IDs (BRK-…), Case Codes (CASE-…)…"
           className="h-11 pl-9"
           aria-label="Search query"
         />
@@ -273,7 +273,7 @@ export function SearchView({
 
       <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
         {/* Filters */}
-        <Card className="h-fit gap-0 p-0 lg:sticky lg:top-20">
+        <Card className="h-fit gap-0 p-0 lg:sticky lg:top-24">
           <div className="space-y-4 p-4">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-sm font-semibold">
@@ -311,7 +311,7 @@ export function SearchView({
                   options: creators.map((c) => ({ value: c.id, label: c.name })),
                 },
                 {
-                  label: "Barker",
+                  label: "Author",
                   value: barkerFilter,
                   set: setBarkerFilter,
                   options: users.map((u) => ({ value: u.id, label: u.name })),
@@ -387,7 +387,7 @@ export function SearchView({
                       variant="outline"
                       className="bg-agree/15 text-agree border-agree/30"
                     >
-                      Exact Bark Code
+                      Exact Reaction ID
                     </Badge>
                     <BarkCode code={exactBark.code} size="md" />
                   </div>
@@ -400,7 +400,7 @@ export function SearchView({
                 </div>
                 <Button asChild className="shrink-0">
                   <Link href={`/barks/${exactBark.code}`}>
-                    Go to bark <ArrowRight className="size-4" />
+                    Go to reaction <ArrowRight className="size-4" />
                   </Link>
                 </Button>
               </div>
@@ -439,7 +439,7 @@ export function SearchView({
           <Tabs defaultValue="barks">
             <TabsList>
               <TabsTrigger value="barks">
-                Barks ({matchedBarks.length})
+                Reactions ({matchedBarks.length})
               </TabsTrigger>
               <TabsTrigger value="cases">
                 Cases ({matchedCases.length})
@@ -452,8 +452,8 @@ export function SearchView({
               {matchedBarks.length === 0 ? (
                 <EmptyState
                   icon={Search}
-                  title="No barks match"
-                  description="Try broadening your query or clearing some filters. Paste a full Bark Code (BRK-…) for a direct match."
+                  title="No reactions match"
+                  description="Try broadening your query or clearing some filters. Paste a full Reaction ID (BRK-…) for a direct match."
                 />
               ) : (
                 matchedBarks.map((b) => <BarkCard key={b.id} bark={b} />)

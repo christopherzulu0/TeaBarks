@@ -27,7 +27,7 @@ export function AdminAnalytics() {
         <CardHeader>
           <CardTitle className="text-base">Platform Growth</CardTitle>
           <CardDescription>
-            Cumulative users, published barks, cases, and stories over the last
+            Cumulative users, published reactions, cases, and stories over the last
             six months
           </CardDescription>
         </CardHeader>
