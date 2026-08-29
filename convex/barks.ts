@@ -450,11 +450,19 @@ export const getByCode = query({
   args: { code: v.string() },
   returns: v.union(barkDoc, v.null()),
   handler: async (ctx, args) => {
+    const code = args.code.trim().toUpperCase();
+    if (!code) return null;
     const bark = await ctx.db
       .query("barks")
-      .withIndex("by_code", (q) => q.eq("code", args.code))
+      .withIndex("by_code", (q) => q.eq("code", code))
       .unique();
     if (!bark) return null;
+    if (bark.status !== "public") {
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity || bark.authorClerkId !== clerkUserId(identity)) {
+        return null;
+      }
+    }
     return await withResolvedEvidence(ctx, bark);
   },
 });

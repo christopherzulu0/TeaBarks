@@ -107,8 +107,10 @@ export async function listPublicSources(): Promise<Source[]> {
 }
 
 export async function getBarkByCodeAction(code: string): Promise<Bark | null> {
+  const normalized = code.trim().toUpperCase();
+  if (!normalized) return null;
   try {
-    const doc = await fetchQuery(api.barks.getByCode, { code });
+    const doc = await fetchQuery(api.barks.getByCode, { code: normalized });
     return doc ? toUiBark(doc) : null;
   } catch (error) {
     console.error("Failed to get bark by code:", error);

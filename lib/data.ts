@@ -1756,7 +1756,8 @@ export function getSource(id: string): Source | undefined {
 }
 
 export function getBarkByCode(code: string): Bark | undefined {
-  return barks.find((b) => b.code === code);
+  const normalized = code.trim().toUpperCase();
+  return barks.find((b) => b.code === normalized);
 }
 
 export function getCaseByCode(code: string): AccountabilityCase | undefined {

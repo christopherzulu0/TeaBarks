@@ -48,14 +48,19 @@ import type { Bark, EvidenceType, Source, User } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
+function normalizeBarkCode(code: string) {
+  return code.trim().toUpperCase();
+}
+
 async function resolveBark(code: string): Promise<Bark | undefined> {
+  const normalized = normalizeBarkCode(code);
   try {
-    const live = await getBarkByCodeAction(code);
+    const live = await getBarkByCodeAction(normalized);
     if (live) return live;
   } catch (err) {
     console.error("Failed to fetch live bark:", err);
   }
-  return getBarkByCode(code);
+  return getBarkByCode(normalized);
 }
 
 export async function generateMetadata(
