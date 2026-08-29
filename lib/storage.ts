@@ -63,6 +63,7 @@ export function removeUserKey(
 export const STORAGE_KEYS = {
   barkDraft: "bark-draft",
   locale: "teabarks.locale",
+  readingTextSize: "teabarks.reading-text-size",
   savedBarks: "saved-barks",
   following: "following",
   storyVotes: "story-votes",

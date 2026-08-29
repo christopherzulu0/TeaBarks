@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bell,
+  BookOpen,
   Building2,
   Globe,
   Languages,
@@ -19,6 +20,7 @@ const items = [
   { href: "/settings/privacy", label: "Privacy", icon: Lock },
   // { href: "/settings/security", label: "Security", icon: ShieldCheck },
   { href: "/settings/notifications", label: "Notifications", icon: Bell },
+  { href: "/settings/reading", label: "Reading", icon: BookOpen },
   { href: "/settings/language", label: "Language", icon: Languages },
   { href: "/settings/country", label: "Country", icon: Globe },
   // { href: "/settings/accounts", label: "Connected Accounts", icon: Link2 },

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MessageSquare } from "lucide-react";
 import { BarkContent } from "@/components/bark/bark-content";
+import { BarkReadingToolbar } from "@/components/bark/bark-reading-toolbar";
 import { LikeButton } from "@/components/bark/like-button";
 import { LiveReplyThread } from "@/components/bark/live-reply-thread";
 import { ReplyThread } from "@/components/bark/reply-thread";
@@ -316,6 +317,7 @@ export default async function BarkPage(props: PageProps<"/barks/[code]">) {
 
           {/* Analysis content */}
           <div className="mt-8 min-w-0 break-words">
+            <BarkReadingToolbar />
             <BarkContent content={bark.content} evidence={bark.evidence} />
           </div>
 

@@ -15,6 +15,7 @@ import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import { CoverPicker } from "@/components/stories/cover-picker";
 import { StorySettingsDialog } from "@/components/stories/story-settings-dialog";
+import { ReadingProse } from "@/components/reading-prose";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -243,7 +244,7 @@ export function ContinueWriting({
           />
         </TabsContent>
         <TabsContent value="preview">
-          <div className="prose-bark min-h-[28rem] rounded-md border p-6 font-serif">
+          <ReadingProse className="min-h-[28rem] rounded-md border p-6">
             {body ? (
               body.split("\n\n").map((para, i) =>
                 para.startsWith("## ") ? (
@@ -266,7 +267,7 @@ export function ContinueWriting({
             ) : (
               <p className="text-muted-foreground">Nothing to preview yet.</p>
             )}
-          </div>
+          </ReadingProse>
         </TabsContent>
       </Tabs>
 

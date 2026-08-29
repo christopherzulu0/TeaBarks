@@ -3,7 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import {
-  ALargeSmall,
   ArrowLeft,
   ArrowRight,
   BookOpen,
@@ -16,27 +15,13 @@ import { ChapterTts } from "@/components/stories/chapter-tts";
 import { StoryComments } from "@/components/stories/story-comments";
 import { VoteButton } from "@/components/stories/story-actions";
 import { ReportButton } from "@/components/report-dialog";
+import { ReadingProse } from "@/components/reading-prose";
+import { ReadingTextSizeControl } from "@/components/reading-text-size-control";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import type { Chapter } from "@/lib/story-types";
 import { STORAGE_KEYS, writeUserJson } from "@/lib/storage";
-import { cn } from "@/lib/utils";
 import { api } from "@/convex/_generated/api";
-
-type FontSize = "sm" | "md" | "lg";
-
-const fontSizeClass: Record<FontSize, string> = {
-  sm: "text-[0.95rem] leading-[1.75]",
-  md: "text-[1.0625rem] leading-[1.85]",
-  lg: "text-[1.1875rem] leading-[1.9]",
-};
 
 export function ChapterReader({
   storySlug,
@@ -58,8 +43,7 @@ export function ChapterReader({
   const userId = user?.id;
   const recordView = useMutation(api.storySocial.recordView);
   const [progress, setProgress] = React.useState(0);
-  const [fontSize, setFontSize] = React.useState<FontSize>("md");
-  const articleRef = React.useRef<HTMLElement>(null);
+  const articleRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     if (!isAuthenticated) return;
@@ -138,25 +122,7 @@ export function ChapterReader({
               wordCount={chapter.wordCount}
               chapterKey={`${storySlug}:${chapter.number}`}
             />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" aria-label="Text size">
-                  <ALargeSmall className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Text size</DropdownMenuLabel>
-                {(["sm", "md", "lg"] as const).map((s) => (
-                  <DropdownMenuItem
-                    key={s}
-                    onSelect={() => setFontSize(s)}
-                    className={cn(fontSize === s && "bg-accent")}
-                  >
-                    {s === "sm" ? "Small" : s === "md" ? "Medium" : "Large"}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <ReadingTextSizeControl />
             <Button asChild variant="outline" size="sm" aria-label="Table of contents">
               <Link href={`/stories/${storySlug}`}>
                 <List className="size-4" />
@@ -193,16 +159,13 @@ export function ChapterReader({
         </header>
 
         {/* Body */}
-        <article
-          ref={articleRef}
-          className={cn("prose-bark font-serif text-foreground/90", fontSizeClass[fontSize])}
-        >
+        <ReadingProse ref={articleRef} className="text-foreground/90">
           {chapter.paragraphs.map((p, i) => (
             <p key={i} className="mb-5">
               {p}
             </p>
           ))}
-        </article>
+        </ReadingProse>
 
         {/* End-of-chapter actions */}
         <div className="mt-10 flex flex-col items-center gap-4">

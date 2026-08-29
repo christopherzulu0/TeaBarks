@@ -39,6 +39,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { barkKeys } from "@/lib/barks/query";
 import { BarkCode } from "@/components/bark-code";
 import { PersonAvatar } from "@/components/person-avatar";
+import { ReadingProse } from "@/components/reading-prose";
 import { PlatformIcon } from "@/components/platform-icon";
 import { SourceThumb } from "@/components/source-thumb";
 import { VerifiedBadge } from "@/components/verified-badge";
@@ -900,7 +901,7 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
                     />
                   </TabsContent>
                   <TabsContent value="preview">
-                    <div className="prose-bark min-h-80 space-y-3 rounded-md border p-4 font-serif text-[15px] leading-relaxed">
+                    <ReadingProse className="min-h-80 space-y-3 rounded-md border p-4">
                       {body ? (
                         body.split("\n").map((line, i) => {
                           if (line.startsWith("## "))
@@ -959,7 +960,7 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
                           Nothing to preview yet.
                         </p>
                       )}
-                    </div>
+                    </ReadingProse>
                   </TabsContent>
                 </Tabs>
               </div>

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { UserRound } from "lucide-react";
 import { BarkTypeBadge } from "@/components/bark-type-badge";
 import { CreatorReviewContent } from "@/components/reviews/creator-review-content";
+import { ReviewReadingToolbar } from "@/components/reviews/review-reading-toolbar";
 import { PersonAvatar } from "@/components/person-avatar";
 import { ReviewCode } from "@/components/review-code";
 import { ShareMenu } from "@/components/share-menu";
@@ -124,6 +125,7 @@ export default async function CreatorReviewPage(
 
       <Separator className="my-8" />
 
+      <ReviewReadingToolbar />
       <CreatorReviewContent blocks={review.content} />
     </article>
   );

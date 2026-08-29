@@ -1,4 +1,5 @@
 import { EvidenceCard } from "@/components/evidence-card";
+import { ReadingProse } from "@/components/reading-prose";
 import type { ContentBlock, Evidence } from "@/lib/types";
 
 export function BarkContent({
@@ -11,7 +12,7 @@ export function BarkContent({
   const evidenceById = new Map(evidence.map((e) => [e.id, e]));
 
   return (
-    <div className="prose-bark">
+    <ReadingProse>
       {content.map((block, i) => {
         switch (block.kind) {
           case "heading":
@@ -48,6 +49,6 @@ export function BarkContent({
           }
         }
       })}
-    </div>
+    </ReadingProse>
   );
 }

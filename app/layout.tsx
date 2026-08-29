@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
 import { LocaleProvider } from "@/components/locale-provider";
+import { ReadingTextSizeProvider } from "@/components/reading-text-size-provider";
 import { AppProviders } from "@/components/providers/app-providers";
 import { AppClerkProvider } from "@/components/providers/clerk-provider";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -48,10 +49,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             disableTransitionOnChange
           >
             <LocaleProvider>
-              <AppProviders>
-                <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
-                <Toaster />
-              </AppProviders>
+              <ReadingTextSizeProvider>
+                <AppProviders>
+                  <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
+                  <Toaster />
+                </AppProviders>
+              </ReadingTextSizeProvider>
             </LocaleProvider>
           </ThemeProvider>
         </AppClerkProvider>

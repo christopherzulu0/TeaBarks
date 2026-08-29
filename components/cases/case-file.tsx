@@ -28,6 +28,8 @@ import { CaseFollowButton } from "@/components/cases/case-follow-button";
 import { StartMessageButton } from "@/components/messages/start-message-button";
 import { SaveCaseButton } from "@/components/cases/save-case-button";
 import { ReportButton } from "@/components/report-dialog";
+import { ReadingTextSizeControl } from "@/components/reading-text-size-control";
+import { useReadingTextSize } from "@/components/reading-text-size-provider";
 import { ShareMenu } from "@/components/share-menu";
 import { SourceThumb } from "@/components/source-thumb";
 import { VerifiedBadge } from "@/components/verified-badge";
@@ -56,7 +58,9 @@ import { toUiCase } from "@/lib/cases/query";
 import { getCreator, getPerson, getSource } from "@/lib/data";
 import { formatDate, formatNumber } from "@/lib/format";
 import { caseStatusMeta, claimStatusMeta, platformMeta } from "@/lib/meta";
+import { readingTextSizeClass } from "@/lib/reading-text-size";
 import type { AccountabilityCase, Creator } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 function AnalysisList({
   items,
@@ -125,6 +129,8 @@ export function CaseFile({
   const [response, setResponse] = React.useState("");
   const [postingNote, setPostingNote] = React.useState(false);
   const [postingResponse, setPostingResponse] = React.useState(false);
+  const { textSize } = useReadingTextSize();
+  const readingClass = readingTextSizeClass[textSize];
 
   const c = live ? toUiCase(live) : initialCase;
   const source = getSource(c.sourceId);
@@ -292,7 +298,7 @@ export function CaseFile({
               </div>
             </div>
           )}
-          <p className="text-sm leading-relaxed text-foreground/85">
+          <p className={cn(readingClass, "text-foreground/85")}>
             {c.summary}
           </p>
           <div className="flex gap-2">
@@ -308,6 +314,7 @@ export function CaseFile({
               />
             ) : null}
             <SaveCaseButton code={c.code} />
+            <ReadingTextSizeControl />
             <ShareMenu
               kind="case"
               code={c.code}
@@ -357,7 +364,12 @@ export function CaseFile({
                   </p>
                 </div>
               </div>
-              <blockquote className="mt-3 border-l-2 border-verified/50 pl-4 font-serif text-[15px] leading-relaxed text-foreground/90">
+              <blockquote
+                className={cn(
+                  readingClass,
+                  "mt-3 border-l-2 border-verified/50 pl-4 font-serif text-foreground/90"
+                )}
+              >
                 {c.creatorResponse.content}
               </blockquote>
             </section>
@@ -408,7 +420,7 @@ export function CaseFile({
                         C{i + 1}
                       </span>
                       <div className="min-w-0 flex-1 space-y-1.5">
-                        <p className="text-sm font-medium leading-relaxed">
+                        <p className={cn(readingClass, "font-medium")}>
                           {claim.text}
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -522,7 +534,7 @@ export function CaseFile({
                               {formatDate(communityNote.postedAt)}
                             </span>
                           </div>
-                          <p className="text-sm leading-relaxed text-foreground/90">
+                          <p className={cn(readingClass, "text-foreground/90")}>
                             {communityNote.text}
                           </p>
                         </div>
