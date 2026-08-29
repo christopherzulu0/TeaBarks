@@ -10,7 +10,7 @@ export default function PlatformLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-svh flex-col">
+    <div className="flex min-h-svh min-w-0 flex-col overflow-x-hidden">
       <TopNav />
       <NotificationSound />
       <div className="flex min-h-0 min-w-0 flex-1">

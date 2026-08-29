@@ -36,10 +36,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${sourceSerif.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${sourceSerif.variable} h-full overflow-x-hidden antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      <body className="flex min-h-full min-w-0 flex-col overflow-x-hidden">
         <AppClerkProvider>
           <ThemeProvider
             attribute="class"

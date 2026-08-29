@@ -157,14 +157,14 @@
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-sans scroll-smooth;
+    @apply font-sans scroll-smooth overflow-x-hidden;
   }
 }
 
 @layer components {
   /* Long-form article body styling for Bark analysis content */
   .prose-bark {
-    @apply font-serif text-[1.0625rem] leading-[1.85] text-foreground/90;
+    @apply min-w-0 break-words font-serif text-[1.0625rem] leading-[1.85] text-foreground/90;
   }
   .prose-bark h2 {
     @apply font-sans text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 leading-snug;

@@ -14,7 +14,7 @@ export function PlatformMain({ children }: { children: ReactNode }) {
       <main
         id="main"
         className={cn(
-          "flex min-h-0 min-w-0 flex-1 flex-col",
+          "flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden",
           "pb-16 lg:pb-0",
           isMessages && "overflow-hidden"
         )}

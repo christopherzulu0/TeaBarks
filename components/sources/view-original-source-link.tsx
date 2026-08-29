@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { createPortal } from "react-dom";
 import { Copy, ExternalLink, Link2, Play } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -16,109 +15,8 @@ const VIDEO_PLATFORMS = new Set<SourcePlatform>([
   "livestream",
 ]);
 
-function primaryActionLabel(platform: SourcePlatform) {
-  return VIDEO_PLATFORMS.has(platform) ? "Watch video" : "Open link";
-}
-
 const linkClassName =
   "inline-flex items-center gap-1 text-xs text-primary hover:underline";
-
-function MobileSourceSheet({
-  url,
-  platform,
-  onClose,
-}: {
-  url: string;
-  platform: SourcePlatform;
-  onClose: () => void;
-}) {
-  const primaryLabel = primaryActionLabel(platform);
-
-  React.useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
-
-  const openExternal = () => {
-    window.open(url, "_blank", "noopener,noreferrer");
-    onClose();
-  };
-
-  const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success("Link copied");
-      onClose();
-    } catch {
-      toast.error("Couldn't copy. Select and copy it manually.");
-    }
-  };
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[100] flex flex-col justify-end"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="view-source-title"
-    >
-      <button
-        type="button"
-        className="absolute inset-0 bg-black/40"
-        aria-label="Dismiss"
-        onClick={onClose}
-      />
-      <div className="relative z-10 max-h-[85dvh] overflow-y-auto rounded-t-2xl border-t bg-popover p-4 shadow-lg pb-[max(1rem,env(safe-area-inset-bottom))]">
-        <h2
-          id="view-source-title"
-          className="text-base font-medium text-foreground"
-        >
-          Open external source?
-        </h2>
-        <p className="mt-2 break-all text-left text-xs leading-relaxed text-muted-foreground">
-          {url}
-        </p>
-        <div className="mt-4 flex flex-col gap-2">
-          <Button
-            type="button"
-            size="lg"
-            className="h-11 w-full"
-            onClick={openExternal}
-          >
-            {VIDEO_PLATFORMS.has(platform) ? (
-              <Play className="size-4" aria-hidden />
-            ) : (
-              <Link2 className="size-4" aria-hidden />
-            )}
-            {primaryLabel}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            className="h-11 w-full"
-            onClick={() => void copyLink()}
-          >
-            <Copy className="size-4" aria-hidden />
-            Copy link
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="lg"
-            className="h-11 w-full"
-            onClick={onClose}
-          >
-            Cancel
-          </Button>
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
-}
 
 export function ViewOriginalSourceLink({
   url,
@@ -129,14 +27,17 @@ export function ViewOriginalSourceLink({
   platform: SourcePlatform;
   className?: string;
 }) {
-  const [open, setOpen] = React.useState(false);
-  const [mounted, setMounted] = React.useState(false);
+  const isVideo = VIDEO_PLATFORMS.has(platform);
+  const primaryLabel = isVideo ? "Watch video" : "Open link";
 
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const close = React.useCallback(() => setOpen(false), []);
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied");
+    } catch {
+      toast.error("Couldn't copy. Select and copy it manually.");
+    }
+  };
 
   return (
     <>
@@ -150,22 +51,46 @@ export function ViewOriginalSourceLink({
         <ExternalLink className="size-3" aria-hidden />
       </a>
 
-      <button
-        type="button"
-        className={cn(linkClassName, "touch-manipulation lg:hidden", className)}
-        onClick={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          setOpen(true);
-        }}
-      >
-        View original source{" "}
-        <ExternalLink className="size-3" aria-hidden />
-      </button>
-
-      {open && mounted ? (
-        <MobileSourceSheet url={url} platform={platform} onClose={close} />
-      ) : null}
+      <details className={cn("group lg:hidden", className)}>
+        <summary
+          className={cn(
+            linkClassName,
+            "cursor-pointer touch-manipulation list-none [&::-webkit-details-marker]:hidden"
+          )}
+        >
+          View original source{" "}
+          <ExternalLink className="size-3" aria-hidden />
+        </summary>
+        <div className="mt-2 space-y-2 rounded-lg border bg-card p-3 shadow-sm">
+          <p className="break-all text-xs leading-relaxed text-muted-foreground">
+            {url}
+          </p>
+          <Button
+            asChild
+            size="lg"
+            className="h-11 w-full"
+          >
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              {isVideo ? (
+                <Play className="size-4" aria-hidden />
+              ) : (
+                <Link2 className="size-4" aria-hidden />
+              )}
+              {primaryLabel}
+            </a>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="h-11 w-full"
+            onClick={() => void copyLink()}
+          >
+            <Copy className="size-4" aria-hidden />
+            Copy link
+          </Button>
+        </div>
+      </details>
     </>
   );
 }

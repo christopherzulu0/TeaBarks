@@ -147,7 +147,7 @@ export default async function BarkPage(props: PageProps<"/barks/[code]">) {
   const replies = repliesForBark(bark.id);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto w-full min-w-0 max-w-6xl overflow-x-hidden px-4 py-8">
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -170,8 +170,8 @@ export default async function BarkPage(props: PageProps<"/barks/[code]">) {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-        <article className="min-w-0">
+      <div className="grid min-w-0 gap-8 lg:grid-cols-[1fr_320px]">
+        <article className="min-w-0 overflow-x-hidden">
           {/* Header */}
           <header className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
@@ -179,21 +179,21 @@ export default async function BarkPage(props: PageProps<"/barks/[code]">) {
               <BarkCode code={bark.code} size="md" />
               <EvidenceRating rating={bark.evidenceRating} />
             </div>
-            <h1 className="text-balance text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
+            <h1 className="min-w-0 break-words text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
               {bark.title}
             </h1>
             {author && (
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex min-w-0 flex-col gap-3">
                 <Link
                   href={`/profile/${author.id}`}
-                  className="flex items-center gap-2 hover:text-primary"
+                  className="flex min-w-0 items-center gap-2 hover:text-primary"
                 >
                   <PersonAvatar
                     id={author.id}
                     name={author.name}
-                    className="size-9"
+                    className="size-9 shrink-0"
                   />
-                  <div>
+                  <div className="min-w-0">
                     <p className="flex items-center gap-1 text-sm font-medium">
                       {author.name}
                       {author.verified && <VerifiedBadge className="size-3.5" />}
@@ -207,21 +207,21 @@ export default async function BarkPage(props: PageProps<"/barks/[code]">) {
                     </p>
                   </div>
                 </Link>
-                {bark.live ? (
-                  <FollowBarkAuthorButton
-                    authorClerkId={bark.authorId}
-                    name={author.name}
-                  />
-                ) : null}
-                {bark.live ? (
-                  <StartMessageButton
-                    kind="bark"
-                    barkCode={bark.code}
-                    hideIfClerkId={bark.authorId}
-                    size="sm"
-                  />
-                ) : null}
-                <div className="ml-auto flex items-center gap-1">
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  {bark.live ? (
+                    <FollowBarkAuthorButton
+                      authorClerkId={bark.authorId}
+                      name={author.name}
+                    />
+                  ) : null}
+                  {bark.live ? (
+                    <StartMessageButton
+                      kind="bark"
+                      barkCode={bark.code}
+                      hideIfClerkId={bark.authorId}
+                      size="sm"
+                    />
+                  ) : null}
                   {bark.live ? (
                     <LikeButton
                       code={bark.code}
@@ -255,11 +255,11 @@ export default async function BarkPage(props: PageProps<"/barks/[code]">) {
 
           {/* Source card */}
           {source && creator && (
-            <Card className="mt-6 gap-0 p-0">
-              <div className="flex gap-4 p-4">
+            <Card className="mt-6 min-w-0 gap-0 overflow-hidden p-0">
+              <div className="flex min-w-0 flex-col gap-4 p-4 sm:flex-row">
                 <SourceThumb
                   source={source}
-                  className="aspect-video w-40 shrink-0"
+                  className="aspect-video w-full shrink-0 sm:w-40"
                 />
                 <div className="min-w-0 space-y-1">
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -315,7 +315,7 @@ export default async function BarkPage(props: PageProps<"/barks/[code]">) {
           )}
 
           {/* Analysis content */}
-          <div className="mt-8">
+          <div className="mt-8 min-w-0 break-words">
             <BarkContent content={bark.content} evidence={bark.evidence} />
           </div>
 
@@ -345,7 +345,7 @@ export default async function BarkPage(props: PageProps<"/barks/[code]">) {
         </article>
 
         {/* Evidence panel + cite */}
-        <aside className="space-y-4 lg:sticky lg:top-20 lg:h-fit">
+        <aside className="min-w-0 space-y-4 lg:sticky lg:top-20 lg:h-fit">
           <CiteEmbed
             kind="bark"
             code={bark.code}
