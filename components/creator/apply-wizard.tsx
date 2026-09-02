@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { SignInButton, useUser } from "@clerk/nextjs";
-import { useMutation } from "convex/react";
+import { useConvexAuth, useQuery } from "convex/react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -15,7 +16,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { PlatformIcon } from "@/components/platform-icon";
-import { api } from "@/convex/_generated/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,9 +39,15 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { CountrySelect } from "@/components/profile/country-select";
+import {
+  applyAsCreator,
+  getCreatorByIdAction,
+} from "@/app/actions/creators";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { topics } from "@/lib/data";
 import { platformMeta } from "@/lib/meta";
-import type { SourcePlatform } from "@/lib/types";
+import type { Creator, SourcePlatform } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const STEPS = ["Platforms", "Ownership", "Identity", "Review"] as const;
@@ -56,7 +62,14 @@ const applicablePlatforms: SourcePlatform[] = [
   "livestream",
 ];
 
-const VERIFICATION_CODE = "TB-VRF-8K3QM";
+function generateVerificationId() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let suffix = "";
+  for (let i = 0; i < 6; i++) {
+    suffix += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return `TR-${suffix}`;
+}
 
 function Stepper({ step }: { step: number }) {
   return (
@@ -98,7 +111,8 @@ function Stepper({ step }: { step: number }) {
 
 export function ApplyWizard() {
   const { isSignedIn, user } = useUser();
-  const apply = useMutation(api.creators.apply);
+  const { isAuthenticated } = useConvexAuth();
+  const searchParams = useSearchParams();
   const [step, setStep] = React.useState(0);
   const [selected, setSelected] = React.useState<SourcePlatform[]>([]);
   const [links, setLinks] = React.useState<Record<string, string>>({});
@@ -106,15 +120,72 @@ export function ApplyWizard() {
   const [category, setCategory] = React.useState<string>("");
   const [country, setCountry] = React.useState("EG");
   const [about, setAbout] = React.useState("");
+  const [legalName, setLegalName] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [phone, setPhone] = React.useState("");
+  const [proofPostUrl, setProofPostUrl] = React.useState("");
+  const [emergencyContacts, setEmergencyContacts] = React.useState([
+    { name: "", phone: "", relationship: "" },
+    { name: "", phone: "", relationship: "" },
+  ]);
+  const [verificationId, setVerificationId] = React.useState("");
+  const [claimCreatorId, setClaimCreatorId] = React.useState<string>();
+  const [claimProfile, setClaimProfile] = React.useState<Creator | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
   const [applicationCode, setApplicationCode] = React.useState<string | null>(
     null
   );
+  const [submittedVerificationId, setSubmittedVerificationId] = React.useState<
+    string | null
+  >(null);
 
   React.useEffect(() => {
     const name = user?.fullName ?? user?.username ?? "";
     if (name) setDisplayName((current) => current || name);
-  }, [user?.fullName, user?.username]);
+    const primaryEmail = user?.primaryEmailAddress?.emailAddress;
+    if (primaryEmail) setEmail((current) => current || primaryEmail);
+  }, [user?.fullName, user?.username, user?.primaryEmailAddress?.emailAddress]);
+
+  React.useEffect(() => {
+    const claim = searchParams.get("claim");
+    if (!claim) return;
+    setClaimCreatorId(claim);
+    void getCreatorByIdAction(claim).then((doc) => {
+      if (!doc) return;
+      setClaimProfile(doc);
+      setDisplayName((current) => current || doc.name);
+      setAbout((current) => current || doc.bio);
+      setCategory((current) => current || doc.topics[0] || "");
+      if (doc.country) setCountry((current) => current || doc.country);
+      if (doc.platforms.length) {
+        setSelected((current) => (current.length ? current : doc.platforms));
+      }
+      setLinks((prev) => {
+        const next = { ...prev };
+        for (const link of doc.officialLinks) {
+          const platform =
+            doc.platforms.find((p) =>
+              link.label.toLowerCase().includes(platformMeta[p].label.toLowerCase())
+            ) ?? doc.platforms[0];
+          if (platform && !next[platform]) next[platform] = link.url;
+        }
+        return next;
+      });
+    });
+  }, [searchParams]);
+
+  const claimEligibility = useQuery(
+    api.creators.canClaimCreator,
+    claimCreatorId && isAuthenticated
+      ? { creatorId: claimCreatorId as Id<"creators"> }
+      : "skip"
+  );
+
+  React.useEffect(() => {
+    if (step === 1 && !verificationId) {
+      setVerificationId(generateVerificationId());
+    }
+  }, [step, verificationId]);
 
   const togglePlatform = (p: SourcePlatform) =>
     setSelected((prev) =>
@@ -138,10 +209,36 @@ export function ApplyWizard() {
         );
         return;
       }
+      if (
+        claimProfile?.externalPlatform &&
+        claimProfile.externalHandle &&
+        !selected.includes(claimProfile.externalPlatform)
+      ) {
+        toast.error(
+          `Include ${platformMeta[claimProfile.externalPlatform].label} — your official link must match @${claimProfile.externalHandle}.`
+        );
+        return;
+      }
     }
-    if (step === 2 && (!displayName.trim() || !category)) {
-      toast.error("Add your public name and a content category.");
-      return;
+    if (step === 2) {
+      if (!displayName.trim() || !category) {
+        toast.error("Add your public name and a content category.");
+        return;
+      }
+      if (!legalName.trim() || !email.trim() || !phone.trim()) {
+        toast.error("Legal name, email, and phone are required.");
+        return;
+      }
+      const filledContacts = emergencyContacts.filter(
+        (contact) =>
+          contact.name.trim() &&
+          contact.phone.trim() &&
+          contact.relationship.trim()
+      );
+      if (filledContacts.length < 2) {
+        toast.error("Add at least two emergency contacts.");
+        return;
+      }
     }
     setStep((s) => s + 1);
   };
@@ -159,7 +256,7 @@ export function ApplyWizard() {
           url: (links[platform] ?? "").trim(),
         }))
         .filter((link) => link.url);
-      const result = await apply({
+      const result = await applyAsCreator({
         name: displayName.trim(),
         bio: about.trim(),
         country,
@@ -167,8 +264,21 @@ export function ApplyWizard() {
         platforms: selected,
         officialLinks,
         verificationMethod: "code",
+        claimCreatorId,
+        legalName: legalName.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        proofPostUrl: proofPostUrl.trim() || undefined,
+        verificationIdHint: verificationId,
+        emergencyContacts: emergencyContacts.filter(
+          (contact) =>
+            contact.name.trim() &&
+            contact.phone.trim() &&
+            contact.relationship.trim()
+        ),
       });
       setApplicationCode(result.applicationCode);
+      setSubmittedVerificationId(result.verificationId ?? verificationId);
       toast.success("Application submitted", {
         description:
           "Our verification team reviews applications within 3–5 days. You'll be notified of the outcome.",
@@ -193,7 +303,14 @@ export function ApplyWizard() {
             <CardTitle>Application pending review</CardTitle>
             <CardDescription className="leading-relaxed">
               Your creator application{" "}
-              <span className="font-mono">{applicationCode}</span>{" "}
+              <span className="font-mono">{applicationCode}</span>
+              {submittedVerificationId ? (
+                <>
+                  {" "}
+                  (verification ID{" "}
+                  <span className="font-mono">{submittedVerificationId}</span>)
+                </>
+              ) : null}{" "}
               is with the verification team. Once approved, your profile gets the{" "}
               <BadgeCheck className="inline size-4 text-verified" aria-hidden />{" "}
               verified badge and you can post Official Responses to barks and
@@ -206,6 +323,35 @@ export function ApplyWizard() {
             </Button>
             <Button asChild variant="outline">
               <Link href="/">Back to home</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (
+    claimCreatorId &&
+    isAuthenticated &&
+    claimEligibility !== undefined &&
+    !claimEligibility.allowed
+  ) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-16">
+        <Card>
+          <CardHeader className="items-center text-center">
+            <CardTitle>Cannot claim this profile</CardTitle>
+            <CardDescription className="leading-relaxed">
+              {claimEligibility.reason ??
+                "You are not eligible to claim this creator profile."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center gap-2">
+            <Button asChild variant="outline">
+              <Link href="/creators">Browse creators</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/create">Publish a reaction</Link>
             </Button>
           </CardContent>
         </Card>
@@ -233,6 +379,14 @@ export function ApplyWizard() {
             <CardDescription>
               Select your platforms and paste a link to your channel or profile
               on each.
+              {claimProfile?.externalHandle && claimProfile.externalPlatform ? (
+                <>
+                  {" "}
+                  Your{" "}
+                  {platformMeta[claimProfile.externalPlatform].label} link must
+                  match @{claimProfile.externalHandle}.
+                </>
+              ) : null}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -294,19 +448,30 @@ export function ApplyWizard() {
             </p>
             <div className="flex items-center gap-2">
               <code className="flex-1 rounded-md border bg-muted px-3 py-2 font-mono text-sm">
-                {VERIFICATION_CODE}
+                {verificationId || "Generating…"}
               </code>
               <Button
                 variant="outline"
                 size="icon"
                 aria-label="Copy verification code"
+                disabled={!verificationId}
                 onClick={() => {
-                  navigator.clipboard.writeText(VERIFICATION_CODE);
+                  if (!verificationId) return;
+                  navigator.clipboard.writeText(verificationId);
                   toast.success("Code copied to clipboard");
                 }}
               >
                 <ClipboardCopy className="size-4" />
               </Button>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="proof-post-url">Proof post URL (optional)</Label>
+              <Input
+                id="proof-post-url"
+                value={proofPostUrl}
+                onChange={(e) => setProofPostUrl(e.target.value)}
+                placeholder="Link to the post or bio where you placed the code"
+              />
             </div>
           </CardContent>
         </Card>
@@ -365,6 +530,107 @@ export function ApplyWizard() {
                 className="min-h-24"
               />
             </div>
+            <Separator />
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium">Private verification</h3>
+                <p className="text-xs text-muted-foreground">
+                  Used only for identity review — never shown on your public
+                  profile.
+                </p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="legal-name">Legal name</Label>
+                  <Input
+                    id="legal-name"
+                    value={legalName}
+                    onChange={(e) => setLegalName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="creator-email">Email</Label>
+                  <Input
+                    id="creator-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="creator-phone">Phone</Label>
+                <Input
+                  id="creator-phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="sm:max-w-xs"
+                />
+              </div>
+              <div className="space-y-3">
+                <Label>Emergency contacts (at least 2)</Label>
+                {emergencyContacts.map((contact, index) => (
+                  <div
+                    key={index}
+                    className="grid gap-2 rounded-lg border p-3 sm:grid-cols-3"
+                  >
+                    <Input
+                      placeholder="Name"
+                      value={contact.name}
+                      onChange={(e) =>
+                        setEmergencyContacts((prev) =>
+                          prev.map((row, i) =>
+                            i === index
+                              ? { ...row, name: e.target.value }
+                              : row
+                          )
+                        )
+                      }
+                    />
+                    <Input
+                      placeholder="Phone"
+                      value={contact.phone}
+                      onChange={(e) =>
+                        setEmergencyContacts((prev) =>
+                          prev.map((row, i) =>
+                            i === index
+                              ? { ...row, phone: e.target.value }
+                              : row
+                          )
+                        )
+                      }
+                    />
+                    <Input
+                      placeholder="Relationship"
+                      value={contact.relationship}
+                      onChange={(e) =>
+                        setEmergencyContacts((prev) =>
+                          prev.map((row, i) =>
+                            i === index
+                              ? { ...row, relationship: e.target.value }
+                              : row
+                          )
+                        )
+                      }
+                    />
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setEmergencyContacts((prev) => [
+                      ...prev,
+                      { name: "", phone: "", relationship: "" },
+                    ])
+                  }
+                >
+                  Add another contact
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -402,7 +668,26 @@ export function ApplyWizard() {
               </div>
               <div className="flex justify-between gap-4">
                 <dt className="text-muted-foreground">Ownership proof</dt>
-                <dd className="font-medium">Verification code in bio</dd>
+                <dd className="font-mono text-xs font-medium">
+                  {verificationId}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Legal name</dt>
+                <dd className="font-medium">{legalName}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Emergency contacts</dt>
+                <dd className="font-medium">
+                  {
+                    emergencyContacts.filter(
+                      (contact) =>
+                        contact.name.trim() &&
+                        contact.phone.trim() &&
+                        contact.relationship.trim()
+                    ).length
+                  }
+                </dd>
               </div>
             </dl>
             <Separator />

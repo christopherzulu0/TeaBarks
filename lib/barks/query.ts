@@ -70,6 +70,13 @@ export function toUiBark(doc: Doc<"barks">): Bark {
     sourceCreatorName: doc.sourceCreatorName,
     sourceCreatorId: doc.sourceCreatorId,
     sourceThumbnailUrl: doc.sourceThumbnailUrl,
+    creatorResponse: doc.creatorResponse
+      ? {
+          content: doc.creatorResponse.content,
+          respondedAt: new Date(doc.creatorResponse.respondedAt).toISOString(),
+          verified: doc.creatorResponse.verified,
+        }
+      : undefined,
     live: true,
   };
 }

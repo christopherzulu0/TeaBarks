@@ -9,6 +9,7 @@ import {
 import { clerkOrgId, clerkUserId, requireIdentity } from "./lib/auth";
 import { recordModerationEvent } from "./lib/moderation";
 import {
+  notify,
   notifyMany,
   resolveBarkMentionRecipients,
 } from "./lib/notify";
@@ -824,6 +825,78 @@ export const submitReport = mutation({
       actorName: "System",
       targetLabel,
       note: `Report filed: ${args.category}`,
+    });
+    return null;
+  },
+});
+
+async function approvedCreatorFor(
+  ctx: QueryCtx | MutationCtx,
+  clerkId: string
+) {
+  const rows = await ctx.db
+    .query("creators")
+    .withIndex("by_applicant", (q) => q.eq("applicantClerkId", clerkId))
+    .take(20);
+  return rows.find((row) => row.status === "approved") ?? null;
+}
+
+export const respondOfficially = mutation({
+  args: {
+    code: v.string(),
+    content: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await requireIdentity(ctx);
+    const content = args.content.trim();
+    if (!content) throw new Error("Write an official response first");
+
+    const bark = await barkByCode(ctx, args.code.trim().toUpperCase());
+    if (!bark) throw new Error("Reaction not found");
+    if (bark.creatorResponse) {
+      throw new Error("This reaction already has an official response");
+    }
+    if (!bark.sourceCreatorId) {
+      throw new Error("This reaction is not linked to a creator profile");
+    }
+
+    const creator = await approvedCreatorFor(ctx, clerkUserId(identity));
+    if (!creator || creator._id !== bark.sourceCreatorId) {
+      throw new Error("Only the named approved creator can respond");
+    }
+
+    const now = Date.now();
+    await ctx.db.patch(bark._id, {
+      creatorResponse: {
+        content,
+        respondedAt: now,
+        verified: true,
+      },
+    });
+
+    const newCount = (creator.officialResponseCount ?? 0) + 1;
+    const responseRate =
+      creator.totalBarksReceived > 0
+        ? Math.min(
+            100,
+            Math.round((newCount / creator.totalBarksReceived) * 100)
+          )
+        : creator.responseRate;
+    await ctx.db.patch(creator._id, {
+      officialResponseCount: newCount,
+      responseRate,
+      updatedAt: now,
+    });
+
+    const snippet =
+      content.length > 140 ? `${content.slice(0, 137)}…` : content;
+    await notify(ctx, {
+      recipientClerkId: bark.authorClerkId,
+      category: "creator-response",
+      title: `${creator.name} responded to ${bark.code}`,
+      body: snippet,
+      href: `/barks/${bark.code}`,
     });
     return null;
   },

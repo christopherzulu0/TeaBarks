@@ -7,11 +7,17 @@ import {
   type QueryCtx,
 } from "./_generated/server";
 import { clerkUserId, requireIdentity } from "./lib/auth";
+import {
+  applicantMatchesCreatorIdentity,
+  resolveExternalIdentityFromLink,
+  urlsReferToSameChannel,
+} from "./lib/creator_identity";
 import { recordModerationEvent } from "./lib/moderation";
 import { displayName, notify } from "./lib/notify";
 import {
   creatorDocFields,
   creatorVerificationMethod,
+  emergencyContactFields,
   sourcePlatform,
 } from "./lib/validators";
 
@@ -25,6 +31,69 @@ const publicCreatorStatuses = new Set(["approved", "unclaimed"]);
 
 function isPublicCreator(creator: Doc<"creators">) {
   return publicCreatorStatuses.has(creator.status);
+}
+
+async function applicantLinksMatchStub(
+  ctx: QueryCtx | MutationCtx,
+  stub: Doc<"creators">,
+  platforms: Doc<"creators">["platforms"],
+  officialLinks: { url: string }[]
+): Promise<boolean> {
+  if (applicantMatchesCreatorIdentity(stub, platforms, officialLinks)) {
+    return true;
+  }
+
+  for (const link of officialLinks) {
+    if (!link.url.trim()) continue;
+    for (const platform of platforms) {
+      const identity = resolveExternalIdentityFromLink(link.url, platform);
+      if (!identity) continue;
+      const found = await findByExternalIdentity(
+        ctx,
+        identity.platform as Doc<"creators">["externalPlatform"],
+        identity.externalHandle
+      );
+      if (found && found._id === stub._id) return true;
+    }
+  }
+
+  for (const submitted of officialLinks) {
+    if (!submitted.url.trim()) continue;
+    for (const stubLink of stub.officialLinks) {
+      if (urlsReferToSameChannel(submitted.url, stubLink.url)) return true;
+    }
+  }
+
+  return false;
+}
+
+function assertCanUpgradeUnclaimed(
+  stub: Doc<"creators">,
+  applicantClerkId: string
+) {
+  if (!stub.linkedByClerkId) {
+    throw new Error(
+      "This profile is not linked to a reaction yet and cannot be claimed"
+    );
+  }
+  if (stub.linkedByClerkId !== applicantClerkId) {
+    throw new Error(
+      "Only the member who linked this profile from a reaction can claim it"
+    );
+  }
+}
+
+async function assertCanUpgradeUnclaimedWithLinks(
+  ctx: MutationCtx,
+  stub: Doc<"creators">,
+  applicantClerkId: string,
+  platforms: Doc<"creators">["platforms"],
+  officialLinks: { url: string }[]
+) {
+  assertCanUpgradeUnclaimed(stub, applicantClerkId);
+  if (!(await applicantLinksMatchStub(ctx, stub, platforms, officialLinks))) {
+    throw new Error("Official links must match this profile's platform handle");
+  }
 }
 
 function slugifyHandle(name: string) {
@@ -79,6 +148,74 @@ async function allocateUnclaimedApplicationCode(ctx: MutationCtx) {
   throw new Error("Could not allocate an unclaimed application code");
 }
 
+async function allocateVerificationId(
+  ctx: MutationCtx,
+  preferred?: string
+): Promise<string> {
+  const trimmed = preferred?.trim().toUpperCase();
+  if (trimmed && /^TR-[A-Z0-9]{6}$/.test(trimmed)) {
+    const clash = await ctx.db
+      .query("creatorVerifications")
+      .withIndex("by_verificationId", (q) => q.eq("verificationId", trimmed))
+      .unique();
+    if (!clash) return trimmed;
+  }
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  for (let attempt = 0; attempt < 12; attempt++) {
+    let suffix = "";
+    for (let i = 0; i < 6; i++) {
+      suffix += chars[Math.floor(Math.random() * chars.length)];
+    }
+    const candidate = `TR-${suffix}`;
+    const clash = await ctx.db
+      .query("creatorVerifications")
+      .withIndex("by_verificationId", (q) =>
+        q.eq("verificationId", candidate)
+      )
+      .unique();
+    if (!clash) return candidate;
+  }
+  throw new Error("Could not allocate a verification ID");
+}
+
+async function saveCreatorVerification(
+  ctx: MutationCtx,
+  input: {
+    creatorId: Doc<"creators">["_id"];
+    applicantClerkId: string;
+    legalName: string;
+    email: string;
+    phone: string;
+    proofPostUrl?: string;
+    emergencyContacts: {
+      name: string;
+      phone: string;
+      relationship: string;
+    }[];
+    verificationIdHint?: string;
+  }
+) {
+  const verificationId = await allocateVerificationId(
+    ctx,
+    input.verificationIdHint
+  );
+  const now = Date.now();
+  await ctx.db.insert("creatorVerifications", {
+    creatorId: input.creatorId,
+    applicantClerkId: input.applicantClerkId,
+    legalName: input.legalName.trim(),
+    email: input.email.trim(),
+    phone: input.phone.trim(),
+    verificationId,
+    proofPostUrl: input.proofPostUrl?.trim() || undefined,
+    emergencyContacts: input.emergencyContacts,
+    status: "submitted",
+    createdAt: now,
+    updatedAt: now,
+  });
+  return verificationId;
+}
+
 export const apply = mutation({
   args: {
     name: v.string(),
@@ -94,8 +231,17 @@ export const apply = mutation({
     ),
     verificationMethod: creatorVerificationMethod,
     upgradeCreatorId: v.optional(v.id("creators")),
+    verificationIdHint: v.optional(v.string()),
+    legalName: v.optional(v.string()),
+    email: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    proofPostUrl: v.optional(v.string()),
+    emergencyContacts: v.optional(v.array(emergencyContactFields)),
   },
-  returns: v.object({ applicationCode: v.string() }),
+  returns: v.object({
+    applicationCode: v.string(),
+    verificationId: v.optional(v.string()),
+  }),
   handler: async (ctx, args) => {
     const identity = await requireIdentity(ctx);
     const applicantClerkId = clerkUserId(identity);
@@ -131,13 +277,43 @@ export const apply = mutation({
       (typeof identity.name === "string" && identity.name) ||
       name;
 
+    const verificationPayload =
+      args.legalName?.trim() &&
+      args.email?.trim() &&
+      args.phone?.trim() &&
+      args.emergencyContacts &&
+      args.emergencyContacts.length >= 2
+        ? {
+            legalName: args.legalName,
+            email: args.email,
+            phone: args.phone,
+            proofPostUrl: args.proofPostUrl,
+            emergencyContacts: args.emergencyContacts.filter(
+              (contact) =>
+                contact.name.trim() &&
+                contact.phone.trim() &&
+                contact.relationship.trim()
+            ),
+          }
+        : null;
+
+    let creatorId: Doc<"creators">["_id"];
+    let applicationCode: string;
+
     if (args.upgradeCreatorId) {
       const stub = await ctx.db.get(args.upgradeCreatorId);
       if (!stub || stub.status !== "unclaimed") {
         throw new Error("Unclaimed profile not found");
       }
+      assertCanUpgradeUnclaimedWithLinks(
+        ctx,
+        stub,
+        applicantClerkId,
+        args.platforms,
+        filteredLinks
+      );
       const year = new Date().getUTCFullYear();
-      let applicationCode = stub.applicationCode;
+      applicationCode = stub.applicationCode;
       if (!applicationCode.startsWith("APP-")) {
         for (let attempt = 0; attempt < 8; attempt++) {
           const n = 1000 + Math.floor(Math.random() * 9000);
@@ -169,55 +345,66 @@ export const apply = mutation({
         status: "pending",
         updatedAt: now,
       });
-      return { applicationCode };
-    }
-
-    const year = new Date().getUTCFullYear();
-    let applicationCode = "";
-    for (let attempt = 0; attempt < 8; attempt++) {
-      const n = 1000 + Math.floor(Math.random() * 9000);
-      const candidate = `APP-${year}-${String(n).padStart(4, "0")}`;
-      const clash = await ctx.db
-        .query("creators")
-        .withIndex("by_applicationCode", (q) =>
-          q.eq("applicationCode", candidate)
-        )
-        .unique();
-      if (!clash) {
-        applicationCode = candidate;
-        break;
+      creatorId = stub._id;
+    } else {
+      const year = new Date().getUTCFullYear();
+      applicationCode = "";
+      for (let attempt = 0; attempt < 8; attempt++) {
+        const n = 1000 + Math.floor(Math.random() * 9000);
+        const candidate = `APP-${year}-${String(n).padStart(4, "0")}`;
+        const clash = await ctx.db
+          .query("creators")
+          .withIndex("by_applicationCode", (q) =>
+            q.eq("applicationCode", candidate)
+          )
+          .unique();
+        if (!clash) {
+          applicationCode = candidate;
+          break;
+        }
       }
+      if (!applicationCode) {
+        throw new Error("Could not allocate an application code");
+      }
+
+      const base = slugifyHandle(name);
+      const handle = await allocateUniqueHandle(ctx, base);
+
+      creatorId = await ctx.db.insert("creators", {
+        applicationCode,
+        handle,
+        name,
+        bio: args.bio.trim(),
+        country: args.country.trim() || "US",
+        category: args.category.trim(),
+        platforms: args.platforms,
+        officialLinks: filteredLinks,
+        verificationMethod: args.verificationMethod,
+        applicantClerkId,
+        applicantName,
+        status: "pending",
+        verified: false,
+        followers: 0,
+        totalSources: 0,
+        totalBarksReceived: 0,
+        responseRate: 0,
+        officialResponseCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      });
     }
-    if (!applicationCode) {
-      throw new Error("Could not allocate an application code");
+
+    let verificationId: string | undefined;
+    if (verificationPayload && verificationPayload.emergencyContacts.length >= 2) {
+      verificationId = await saveCreatorVerification(ctx, {
+        creatorId,
+        applicantClerkId,
+        verificationIdHint: args.verificationIdHint,
+        ...verificationPayload,
+      });
     }
 
-    const base = slugifyHandle(name);
-    const handle = await allocateUniqueHandle(ctx, base);
-
-    await ctx.db.insert("creators", {
-      applicationCode,
-      handle,
-      name,
-      bio: args.bio.trim(),
-      country: args.country.trim() || "US",
-      category: args.category.trim(),
-      platforms: args.platforms,
-      officialLinks: filteredLinks,
-      verificationMethod: args.verificationMethod,
-      applicantClerkId,
-      applicantName,
-      status: "pending",
-      verified: false,
-      followers: 0,
-      totalSources: 0,
-      totalBarksReceived: 0,
-      responseRate: 0,
-      createdAt: now,
-      updatedAt: now,
-    });
-
-    return { applicationCode };
+    return { applicationCode, verificationId };
   },
 });
 
@@ -279,9 +466,12 @@ export const ensureUnclaimedFromSource = mutation({
     displayName: v.string(),
     sourceUrl: v.string(),
     channelUrl: v.optional(v.string()),
+    profileImageUrl: v.optional(v.string()),
   },
   returns: v.object({ creatorId: v.id("creators") }),
   handler: async (ctx, args) => {
+    const identity = await requireIdentity(ctx);
+    const linkedByClerkId = clerkUserId(identity);
     const externalHandle = args.externalHandle.trim().toLowerCase();
     if (!externalHandle) throw new Error("External handle is required");
 
@@ -311,6 +501,13 @@ export const ensureUnclaimedFromSource = mutation({
             ...existing.officialLinks,
             { label: args.platform, url: channelUrl },
           ];
+        }
+        const imageUrl = args.profileImageUrl?.trim();
+        if (imageUrl && imageUrl !== existing.profileImageUrl) {
+          patch.profileImageUrl = imageUrl;
+        }
+        if (!existing.linkedByClerkId) {
+          patch.linkedByClerkId = linkedByClerkId;
         }
         if (Object.keys(patch).length > 1) {
           await ctx.db.patch(existing._id, patch);
@@ -346,13 +543,74 @@ export const ensureUnclaimedFromSource = mutation({
       totalSources: 0,
       totalBarksReceived: 0,
       responseRate: 0,
+      officialResponseCount: 0,
       externalPlatform: args.platform,
       externalHandle,
+      profileImageUrl: args.profileImageUrl?.trim() || undefined,
+      linkedByClerkId,
       createdAt: now,
       updatedAt: now,
     });
 
     return { creatorId };
+  },
+});
+
+const canClaimResult = v.object({
+  allowed: v.boolean(),
+  reason: v.optional(v.string()),
+});
+
+export const canClaimCreator = query({
+  args: { creatorId: v.id("creators") },
+  returns: canClaimResult,
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return {
+        allowed: false,
+        reason: "Sign in to claim a creator profile",
+      };
+    }
+    const clerkId = clerkUserId(identity);
+    const creator = await ctx.db.get(args.creatorId);
+    if (!creator || creator.status !== "unclaimed") {
+      return {
+        allowed: false,
+        reason: "This profile is not available to claim",
+      };
+    }
+    if (!creator.linkedByClerkId) {
+      return {
+        allowed: false,
+        reason:
+          "This profile has not been linked from a reaction yet. Publish a reaction about this creator first.",
+      };
+    }
+    if (creator.linkedByClerkId !== clerkId) {
+      return {
+        allowed: false,
+        reason:
+          "Only the member who first linked this profile from a reaction can start a claim",
+      };
+    }
+    const existing = await ctx.db
+      .query("creators")
+      .withIndex("by_applicant", (q) => q.eq("applicantClerkId", clerkId))
+      .take(20);
+    if (existing.some((row) => row.status === "pending")) {
+      return {
+        allowed: false,
+        reason: "You already have an application under review",
+      };
+    }
+    if (existing.some((row) => row.status === "approved")) {
+      return {
+        allowed: false,
+        reason: "You already have an approved creator profile",
+      };
+    }
+    return { allowed: true };
   },
 });
 

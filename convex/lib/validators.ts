@@ -87,6 +87,15 @@ export const webhookEventFields = {
   at: v.number(),
 };
 
+export const caseCreatorResponse = v.object({
+  content: v.string(),
+  respondedAt: v.number(),
+  verified: v.boolean(),
+});
+
+/** Same shape as case official creator responses — reused on barks. */
+export const barkCreatorResponse = caseCreatorResponse;
+
 export const barkDocFields = {
   code: v.string(),
   type: barkType,
@@ -112,6 +121,7 @@ export const barkDocFields = {
   saves: v.number(),
   views: v.number(),
   country: v.optional(v.string()),
+  creatorResponse: v.optional(barkCreatorResponse),
 };
 
 export const creatorReviewFields = {
@@ -335,12 +345,6 @@ export const caseCommunityNote = v.object({
   postedAt: v.number(),
 });
 
-export const caseCreatorResponse = v.object({
-  content: v.string(),
-  respondedAt: v.number(),
-  verified: v.boolean(),
-});
-
 export const caseDocFields = {
   code: v.string(),
   title: v.string(),
@@ -416,6 +420,36 @@ export const creatorDocFields = {
   responseRate: v.number(),
   externalPlatform: v.optional(sourcePlatform),
   externalHandle: v.optional(v.string()),
+  profileImageUrl: v.optional(v.string()),
+  officialResponseCount: v.optional(v.number()),
+  linkedByClerkId: v.optional(v.string()),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+};
+
+export const creatorVerificationStatus = v.union(
+  v.literal("draft"),
+  v.literal("submitted"),
+  v.literal("approved"),
+  v.literal("rejected")
+);
+
+export const emergencyContactFields = v.object({
+  name: v.string(),
+  phone: v.string(),
+  relationship: v.string(),
+});
+
+export const creatorVerificationFields = {
+  creatorId: v.id("creators"),
+  applicantClerkId: v.string(),
+  legalName: v.string(),
+  email: v.string(),
+  phone: v.string(),
+  verificationId: v.string(),
+  proofPostUrl: v.optional(v.string()),
+  emergencyContacts: v.array(emergencyContactFields),
+  status: creatorVerificationStatus,
   createdAt: v.number(),
   updatedAt: v.number(),
 };

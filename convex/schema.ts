@@ -12,6 +12,7 @@ import {
   caseReportFields,
   creatorDocFields,
   creatorFollowFields,
+  creatorVerificationFields,
   evidenceUploadFields,
   membershipFields,
   organizationFields,
@@ -114,6 +115,10 @@ export default defineSchema({
     .index("by_applicant", ["applicantClerkId"])
     .index("by_applicationCode", ["applicationCode"])
     .index("by_external_identity", ["externalPlatform", "externalHandle"]),
+  creatorVerifications: defineTable(creatorVerificationFields)
+    .index("by_creator", ["creatorId"])
+    .index("by_applicant", ["applicantClerkId"])
+    .index("by_verificationId", ["verificationId"]),
   creatorFollows: defineTable(creatorFollowFields)
     .index("by_creator_user", ["creatorId", "clerkUserId"])
     .index("by_user", ["clerkUserId"]),

@@ -20,6 +20,7 @@ import {
   Link as LinkIcon,
   List,
   Loader2,
+  ExternalLink,
   Paperclip,
   Quote,
   Search,
@@ -33,6 +34,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMutation as useConvexMutation } from "convex/react";
 import { toast } from "sonner";
 import { publishBark } from "@/app/actions/barks";
+import { getCreatorByExternalIdentityAction } from "@/app/actions/creators";
 import { analyzeSourceUrl } from "@/app/actions/sources";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -80,7 +82,7 @@ import {
   STORAGE_KEYS,
   writeUserJson,
 } from "@/lib/storage";
-import type { BarkType, Creator, EvidenceType, Source } from "@/lib/types";
+import type { BarkType, Creator, EvidenceType, Source, SourcePlatform } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
@@ -248,6 +250,14 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
   const [detectedCreator, setDetectedCreator] = React.useState<Creator | null>(
     null
   );
+  const [creatorConfirmed, setCreatorConfirmed] = React.useState<boolean | null>(
+    null
+  );
+  const [showManualCreator, setShowManualCreator] = React.useState(false);
+  const [manualHandle, setManualHandle] = React.useState("");
+  const [manualPlatform, setManualPlatform] =
+    React.useState<SourcePlatform>("youtube");
+  const [manualLookupLoading, setManualLookupLoading] = React.useState(false);
   const [barkType, setBarkType] = React.useState<BarkType | null>(null);
   const [title, setTitle] = React.useState("");
   const [body, setBody] = React.useState("");
@@ -415,6 +425,8 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
       }
       setSource(detected.source);
       setDetectedCreator(detected.creator);
+      setCreatorConfirmed(null);
+      setShowManualCreator(false);
       setStep(1);
       if (detected.detailsLimited) {
         toast.message(
@@ -529,6 +541,55 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
   );
   const isUnclaimedProfile =
     isPersistedCreator && !creator?.hasTeaBarksProfile;
+
+  const creatorProfileUrl = creator?.officialLinks[0]?.url;
+
+  const lookupManualCreator = async () => {
+    const handle = manualHandle.trim().toLowerCase();
+    if (!handle) {
+      toast.error("Enter a handle to search.");
+      return;
+    }
+    setManualLookupLoading(true);
+    try {
+      const found = await getCreatorByExternalIdentityAction({
+        platform: manualPlatform,
+        externalHandle: handle,
+      });
+      if (found) {
+        setDetectedCreator(found);
+        setCreatorConfirmed(true);
+        setShowManualCreator(false);
+        toast.success(`Matched ${found.name}`);
+      } else {
+        setDetectedCreator({
+          id: `remote:${manualPlatform}:${handle}`,
+          handle,
+          name: handle,
+          bio: "",
+          verified: false,
+          hasTeaBarksProfile: false,
+          status: "unclaimed",
+          externalHandle: handle,
+          externalPlatform: manualPlatform,
+          platforms: [manualPlatform],
+          officialLinks: [],
+          followers: 0,
+          country: "",
+          topics: [],
+          totalSources: 0,
+          totalBarksReceived: 0,
+          responseRate: 0,
+          joinedAt: new Date().toISOString(),
+        });
+        toast.message("No existing profile — one will be created when you publish.");
+      }
+    } catch {
+      toast.error("Could not look up that creator.");
+    } finally {
+      setManualLookupLoading(false);
+    }
+  };
 
   const publish = () => {
     if (!barkType) {
@@ -696,7 +757,30 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
                         name={creator.name}
                         className="size-6"
                       />
-                      <span className="font-medium">{creator.name}</span>
+                      <div className="min-w-0">
+                        <span className="font-medium">{creator.name}</span>
+                        {(creator.externalHandle || creator.handle) && (
+                          <p className="text-xs text-muted-foreground">
+                            @
+                            {creator.externalHandle ?? creator.handle}
+                            {creator.externalPlatform
+                              ? ` · ${platformMeta[creator.externalPlatform].label}`
+                              : source.platform
+                                ? ` · ${platformMeta[source.platform].label}`
+                                : ""}
+                          </p>
+                        )}
+                        {creatorProfileUrl && (
+                          <a
+                            href={creatorProfileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                          >
+                            View profile <ExternalLink className="size-3" />
+                          </a>
+                        )}
+                      </div>
                       {creator.verified && <VerifiedBadge />}
                     </div>
                   )}
@@ -704,6 +788,90 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
               </div>
 
               <Separator />
+
+              <div className="space-y-3 rounded-lg border p-4">
+                <p className="text-sm font-medium">
+                  Is this the correct creator?
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={creatorConfirmed === true ? "default" : "outline"}
+                    onClick={() => {
+                      setCreatorConfirmed(true);
+                      setShowManualCreator(false);
+                    }}
+                  >
+                    <UserCheck className="size-4" />
+                    Yes, this is correct
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={creatorConfirmed === false ? "default" : "outline"}
+                    onClick={() => {
+                      setCreatorConfirmed(false);
+                      setShowManualCreator(true);
+                      setDetectedCreator(null);
+                    }}
+                  >
+                    No, search again
+                  </Button>
+                </div>
+                {showManualCreator && (
+                  <div className="space-y-3 border-t pt-3">
+                    <p className="text-xs text-muted-foreground">
+                      Paste another source URL above, or enter a handle manually.
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+                      <Input
+                        placeholder="creator_handle"
+                        value={manualHandle}
+                        onChange={(e) => setManualHandle(e.target.value)}
+                      />
+                      <Select
+                        value={manualPlatform}
+                        onValueChange={(value) =>
+                          setManualPlatform(value as SourcePlatform)
+                        }
+                      >
+                        <SelectTrigger aria-label="Platform">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(
+                            [
+                              "youtube",
+                              "tiktok",
+                              "instagram",
+                              "facebook",
+                              "x",
+                              "podcast",
+                            ] as SourcePlatform[]
+                          ).map((platform) => (
+                            <SelectItem key={platform} value={platform}>
+                              {platformMeta[platform].label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        disabled={manualLookupLoading}
+                        onClick={lookupManualCreator}
+                      >
+                        {manualLookupLoading ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          "Look up"
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <div

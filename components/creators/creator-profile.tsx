@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useConvexAuth, useQuery } from "convex/react";
 import {
   ArrowLeft,
   ExternalLink,
@@ -33,6 +34,8 @@ import {
 import { countries } from "@/lib/data";
 import { formatDate, formatNumber, gradientFor } from "@/lib/format";
 import { platformMeta } from "@/lib/meta";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import type { AccountabilityCase, Bark, Creator, Source } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -57,12 +60,23 @@ export function CreatorProfile({
   barksAbout: Bark[];
   cases: AccountabilityCase[];
 }) {
+  const { isAuthenticated } = useConvexAuth();
   const country = countries.find((c) => c.code === creator.country);
   const response = responseLabel(creator.responseRate);
+  const handleLabel = creator.externalHandle
+    ? `@${creator.externalHandle}`
+    : `@${creator.handle}`;
+  const primaryPlatform = creator.externalPlatform ?? creator.platforms[0];
   const openCases = cases.filter(
     (c) => c.status === "open" || c.status === "under-review"
   ).length;
   const [tab, setTab] = React.useState("library");
+  const claimEligibility = useQuery(
+    api.creators.canClaimCreator,
+    !creator.hasTeaBarksProfile && isAuthenticated
+      ? { creatorId: creator.id as Id<"creators"> }
+      : "skip"
+  );
 
   const barkSort = React.useMemo(
     () =>
@@ -118,14 +132,28 @@ export function CreatorProfile({
                         Active on TypeReact
                       </Badge>
                     ) : (
-                      <Badge variant="outline">Unclaimed profile</Badge>
+                      <Badge variant="outline" className="uppercase tracking-wide">
+                        Unclaimed
+                      </Badge>
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    @{creator.handle}
+                    {handleLabel}
+                    {primaryPlatform && (
+                      <>
+                        {" · "}
+                        <PlatformIcon
+                          platform={primaryPlatform}
+                          className="mr-0.5 inline size-3.5"
+                        />
+                        {platformMeta[primaryPlatform].label}
+                      </>
+                    )}
                     {country
                       ? ` · ${country.flag} ${country.name}`
-                      : ` · ${creator.country}`}
+                      : creator.country
+                        ? ` · ${creator.country}`
+                        : ""}
                     {" · "}
                     Joined {formatDate(creator.joinedAt)}
                   </p>
@@ -165,13 +193,19 @@ export function CreatorProfile({
                     Are you {creator.name}?
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Claim this profile to verify your identity and respond
-                    officially to reactions and cases.
+                    {claimEligibility?.allowed
+                      ? "Claim this profile to verify your identity and respond officially to reactions and cases."
+                      : claimEligibility?.reason ??
+                        "Only the member who first linked this profile by publishing a reaction can start a claim. If you are this creator, publish a reaction about your content while signed in, then return here."}
                   </p>
                 </div>
-                <Button asChild size="sm" className="shrink-0">
-                  <Link href="/creators/apply">Claim this profile</Link>
-                </Button>
+                {claimEligibility?.allowed ? (
+                  <Button asChild size="sm" className="shrink-0">
+                    <Link href={`/creators/apply?claim=${creator.id}`}>
+                      Claim this profile
+                    </Link>
+                  </Button>
+                ) : null}
               </div>
             )}
           </div>
@@ -184,7 +218,7 @@ export function CreatorProfile({
                     Library ({sources.length})
                   </TabsTrigger>
                   <TabsTrigger value="barks">
-                    Reactions ({barksAbout.length})
+                    Reactions about this creator ({barksAbout.length})
                   </TabsTrigger>
                   <TabsTrigger value="cases">
                     Cases ({cases.length})
@@ -282,6 +316,14 @@ export function CreatorProfile({
                       </dt>
                       <dd className="text-lg font-bold tabular-nums">
                         {formatNumber(creator.totalBarksReceived)}
+                      </dd>
+                    </div>
+                    <div className="rounded-lg bg-muted/40 p-3">
+                      <dt className="text-xs text-muted-foreground">
+                        Official creator responses
+                      </dt>
+                      <dd className="text-lg font-bold tabular-nums">
+                        {formatNumber(creator.officialResponseCount ?? 0)}
                       </dd>
                     </div>
                     <div className="rounded-lg bg-muted/40 p-3">

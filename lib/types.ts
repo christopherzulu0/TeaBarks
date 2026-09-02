@@ -71,6 +71,14 @@ export type CaseCategory =
   | "scam"
   | "plagiarism";
 
+export type CreatorStatus = "unclaimed" | "pending" | "approved" | "rejected";
+
+export interface CreatorOfficialResponse {
+  content: string;
+  respondedAt: string;
+  verified: boolean;
+}
+
 export interface Creator {
   id: string;
   handle: string;
@@ -78,6 +86,11 @@ export interface Creator {
   bio: string;
   verified: boolean;
   hasTeaBarksProfile: boolean;
+  status?: CreatorStatus;
+  externalHandle?: string;
+  externalPlatform?: SourcePlatform;
+  profileImageUrl?: string;
+  officialResponseCount?: number;
   platforms: SourcePlatform[];
   officialLinks: { label: string; url: string }[];
   followers: number;
@@ -177,6 +190,7 @@ export interface Bark {
   sourceCreatorName?: string;
   sourceCreatorId?: string;
   sourceThumbnailUrl?: string;
+  creatorResponse?: CreatorOfficialResponse;
   live?: boolean;
 }
 

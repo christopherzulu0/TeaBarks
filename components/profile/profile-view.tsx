@@ -41,6 +41,7 @@ import { barkTypeMeta } from "@/lib/meta";
 import { useUser } from "@clerk/nextjs";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { toUiCase } from "@/lib/cases/query";
 import { toUiBark } from "@/lib/barks/query";
 import { CountrySelect } from "@/components/profile/country-select";
@@ -146,6 +147,11 @@ export function ProfileView({
     : isOwner
       ? initialCasesAboutMe
       : [];
+  const reactionDocs = useQuery(
+    api.barks.listBySourceCreator,
+    isOwner && creator ? { creatorId: creator.id as Id<"creators"> } : "skip"
+  );
+  const reactionsAboutMe = reactionDocs ? reactionDocs.map(toUiBark) : [];
   const openedDocs = useQuery(
     api.cases.listOpenedByMe,
     ownerAuth ? {} : "skip"
@@ -581,7 +587,8 @@ export function ProfileView({
                       </TabsTrigger>
                       {creator && (
                         <TabsTrigger value="inbox">
-                          Cases about me ({casesAboutMe.length})
+                          Creator inbox (
+                          {casesAboutMe.length + reactionsAboutMe.length})
                         </TabsTrigger>
                       )}
                       <TabsTrigger value="saved">
@@ -643,27 +650,56 @@ export function ProfileView({
                 )}
 
                 {isOwner && creator && (
-                  <TabsContent value="inbox" className="mt-4 space-y-3">
-                    {casesAboutMe.length === 0 ? (
-                      <EmptyState
-                        icon={Scale}
-                        title="No cases about you"
-                        description="When someone opens an accountability case naming your creator profile, it will show up here."
-                      />
-                    ) : (
-                      casesAboutMe.map((inboxCase) => (
-                        <div key={inboxCase.id} className="space-y-2">
-                          <CaseCard accountabilityCase={inboxCase} />
-                          {!inboxCase.creatorResponse && (
-                            <Button asChild size="sm" variant="outline">
-                              <Link href={`/cases/${inboxCase.code}`}>
-                                Respond officially
-                              </Link>
-                            </Button>
-                          )}
-                        </div>
-                      ))
-                    )}
+                  <TabsContent value="inbox" className="mt-4 space-y-6">
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold">Cases about you</h3>
+                      {casesAboutMe.length === 0 ? (
+                        <EmptyState
+                          icon={Scale}
+                          title="No cases about you"
+                          description="When someone opens an accountability case naming your creator profile, it will show up here."
+                        />
+                      ) : (
+                        casesAboutMe.map((inboxCase) => (
+                          <div key={inboxCase.id} className="space-y-2">
+                            <CaseCard accountabilityCase={inboxCase} />
+                            {!inboxCase.creatorResponse && (
+                              <Button asChild size="sm" variant="outline">
+                                <Link href={`/cases/${inboxCase.code}`}>
+                                  Respond officially
+                                </Link>
+                              </Button>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold">
+                        Reactions about you
+                      </h3>
+                      {reactionsAboutMe.length === 0 ? (
+                        <EmptyState
+                          icon={FileText}
+                          title="No reactions about you"
+                          description="Community reactions linked to your creator profile appear here."
+                        />
+                      ) : (
+                        reactionsAboutMe.map((inboxBark) => (
+                          <div key={inboxBark.id} className="space-y-2">
+                            <BarkCard bark={inboxBark} />
+                            {!inboxBark.creatorResponse && (
+                              <Button asChild size="sm" variant="outline">
+                                <Link href={`/barks/${inboxBark.code}`}>
+                                  Respond officially
+                                </Link>
+                              </Button>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </TabsContent>
                 )}
 
