@@ -33,6 +33,10 @@ function isPublicCreator(creator: Doc<"creators">) {
   return publicCreatorStatuses.has(creator.status);
 }
 
+function isFollowableCreatorDoc(creator: Doc<"creators">) {
+  return creator.status === "approved";
+}
+
 async function applicantLinksMatchStub(
   ctx: QueryCtx | MutationCtx,
   stub: Doc<"creators">,
@@ -699,6 +703,7 @@ export const approve = mutation({
 const followStateDoc = v.object({
   followers: v.number(),
   following: v.boolean(),
+  isSelf: v.boolean(),
 });
 
 export const followState = query({
@@ -706,21 +711,24 @@ export const followState = query({
   returns: v.union(followStateDoc, v.null()),
   handler: async (ctx, args) => {
     const creator = await ctx.db.get(args.creatorId);
-    if (!creator || creator.status !== "approved") return null;
+    if (!creator || !isFollowableCreatorDoc(creator)) return null;
     const identity = await ctx.auth.getUserIdentity();
     let following = false;
+    let isSelf = false;
     if (identity) {
+      const clerkId = clerkUserId(identity);
+      isSelf = creator.applicantClerkId === clerkId;
       const existing = await ctx.db
         .query("creatorFollows")
         .withIndex("by_creator_user", (q) =>
           q
             .eq("creatorId", creator._id)
-            .eq("clerkUserId", clerkUserId(identity))
+            .eq("clerkUserId", clerkId)
         )
         .unique();
       following = Boolean(existing);
     }
-    return { followers: creator.followers, following };
+    return { followers: creator.followers, following, isSelf };
   },
 });
 
@@ -730,8 +738,8 @@ export const toggleFollow = mutation({
   handler: async (ctx, args) => {
     const identity = await requireIdentity(ctx);
     const creator = await ctx.db.get(args.creatorId);
-    if (!creator || creator.status !== "approved") {
-      throw new Error("Creator not found");
+    if (!creator || !isFollowableCreatorDoc(creator)) {
+      throw new Error("Only claimed creator profiles can be followed");
     }
     const clerkId = clerkUserId(identity);
     if (creator.applicantClerkId === clerkId) {
@@ -747,7 +755,7 @@ export const toggleFollow = mutation({
       await ctx.db.delete(existing._id);
       const followers = Math.max(0, creator.followers - 1);
       await ctx.db.patch(creator._id, { followers, updatedAt: Date.now() });
-      return { followers, following: false };
+      return { followers, following: false, isSelf: false };
     }
     await ctx.db.insert("creatorFollows", {
       creatorId: creator._id,
@@ -765,7 +773,7 @@ export const toggleFollow = mutation({
       body: `${actorName} followed @${creator.handle}.`,
       href: `/creators/${creator.handle}`,
     });
-    return { followers, following: true };
+    return { followers, following: true, isSelf: false };
   },
 });
 
@@ -784,7 +792,7 @@ export const listMineFollows = query({
     const result = [];
     for (const row of rows) {
       const creator = await ctx.db.get(row.creatorId);
-      if (creator && creator.status === "approved") result.push(creator);
+      if (creator && isFollowableCreatorDoc(creator)) result.push(creator);
     }
     return result;
   },

@@ -8,9 +8,11 @@ import {
   ArrowLeft,
   Check,
   CheckCheck,
+  FileText,
   Mail,
   Paperclip,
   Send,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/empty-state";
@@ -22,6 +24,19 @@ import { Separator } from "@/components/ui/separator";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
+
+const MAX_ATTACHMENTS = 5;
+const MAX_FILE_BYTES = 10 * 1024 * 1024;
+const ACCEPT =
+  "image/*,application/pdf,.pdf,.doc,.docx,.txt,.md,text/plain,text/markdown";
+
+type DraftAttachment = {
+  id: string;
+  storageId: Id<"_storage">;
+  fileName: string;
+  contentType?: string;
+  previewUrl?: string;
+};
 
 function formatTime(ms: number) {
   return new Date(ms).toLocaleTimeString("en-US", {
@@ -36,28 +51,82 @@ const kindLabel = {
   creator: "Creator",
 } as const;
 
+function isImageType(contentType?: string, fileName?: string) {
+  if (contentType?.startsWith("image/")) return true;
+  return Boolean(fileName?.match(/\.(png|jpe?g|gif|webp|bmp|svg)$/i));
+}
+
 function Bubble({
   mine,
   body,
   createdAt,
   read,
+  attachments,
 }: {
   mine: boolean;
   body: string;
   createdAt: number;
   read: boolean;
+  attachments: Array<{
+    storageId: Id<"_storage">;
+    fileName?: string;
+    contentType?: string;
+    url: string | null;
+  }>;
 }) {
   return (
     <div className={cn("flex", mine ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "max-w-[75%] space-y-1 break-words rounded-2xl px-3.5 py-2 text-sm leading-relaxed",
+          "max-w-[75%] space-y-2 break-words rounded-2xl px-3.5 py-2 text-sm leading-relaxed",
           mine
             ? "rounded-br-sm bg-primary text-primary-foreground"
             : "rounded-bl-sm bg-muted"
         )}
       >
-        <p>{body}</p>
+        {body ? <p>{body}</p> : null}
+        {attachments.length > 0 ? (
+          <div className="space-y-2">
+            {attachments.map((file) => {
+              const label = file.fileName || "Attachment";
+              if (file.url && isImageType(file.contentType, file.fileName)) {
+                return (
+                  <a
+                    key={file.storageId}
+                    href={file.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block overflow-hidden rounded-lg"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={file.url}
+                      alt={label}
+                      className="max-h-56 w-full object-cover"
+                    />
+                  </a>
+                );
+              }
+              return (
+                <a
+                  key={file.storageId}
+                  href={file.url ?? undefined}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={cn(
+                    "inline-flex max-w-full items-center gap-1.5 underline-offset-2 hover:underline",
+                    mine
+                      ? "text-primary-foreground/90"
+                      : "text-foreground"
+                  )}
+                >
+                  <FileText className="size-3.5 shrink-0" />
+                  <span className="truncate">{label}</span>
+                </a>
+              );
+            })}
+          </div>
+        ) : null}
         <p
           className={cn(
             "flex items-center justify-end gap-1 text-[10px]",
@@ -86,10 +155,16 @@ export function MessagesView() {
     useQuery(api.messages.listMine, isAuthenticated ? {} : "skip") ?? [];
   const [query, setQuery] = React.useState("");
   const [draft, setDraft] = React.useState("");
+  const [attachments, setAttachments] = React.useState<DraftAttachment[]>([]);
   const [sending, setSending] = React.useState(false);
+  const [uploading, setUploading] = React.useState(false);
   const endRef = React.useRef<HTMLDivElement>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const send = useMutation(api.messages.send);
   const markRead = useMutation(api.messages.markRead);
+  const generateUploadUrl = useMutation(api.evidenceFiles.generateUploadUrl);
+  const registerUpload = useMutation(api.evidenceFiles.registerUpload);
+  const deleteUpload = useMutation(api.evidenceFiles.deleteUpload);
 
   const filtered = inbox.filter((row) => {
     if (!query.trim()) return true;
@@ -120,6 +195,16 @@ export function MessagesView() {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  React.useEffect(() => {
+    setDraft("");
+    setAttachments((prev) => {
+      for (const file of prev) {
+        if (file.previewUrl) URL.revokeObjectURL(file.previewUrl);
+      }
+      return [];
+    });
+  }, [active?.threadId]);
+
   const openThread = (threadId: Id<"messageThreads">) => {
     router.replace(`/messages?c=${threadId}`);
   };
@@ -128,18 +213,100 @@ export function MessagesView() {
     router.replace("/messages");
   };
 
+  const removeDraftAttachment = async (id: string) => {
+    const file = attachments.find((row) => row.id === id);
+    if (!file) return;
+    if (file.previewUrl) URL.revokeObjectURL(file.previewUrl);
+    try {
+      await deleteUpload({ storageId: file.storageId });
+    } catch {
+      // Keep UI responsive if cleanup fails.
+    }
+    setAttachments((prev) => prev.filter((row) => row.id !== id));
+  };
+
+  const onPickFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const remaining = MAX_ATTACHMENTS - attachments.length;
+    if (remaining <= 0) {
+      toast.message(`You can attach up to ${MAX_ATTACHMENTS} files`);
+      return;
+    }
+    const chosen = Array.from(files).slice(0, remaining);
+    setUploading(true);
+    try {
+      for (const file of chosen) {
+        if (file.size > MAX_FILE_BYTES) {
+          toast.error(`${file.name} is larger than 10MB`);
+          continue;
+        }
+        const postUrl = await generateUploadUrl();
+        const uploaded = await fetch(postUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": file.type || "application/octet-stream",
+          },
+          body: file,
+        });
+        if (!uploaded.ok) throw new Error("Upload failed");
+        const body = (await uploaded.json()) as { storageId?: string };
+        if (!body.storageId) throw new Error("Upload failed");
+        const storageId = body.storageId as Id<"_storage">;
+        await registerUpload({ storageId });
+        const previewUrl = isImageType(file.type, file.name)
+          ? URL.createObjectURL(file)
+          : undefined;
+        setAttachments((prev) => [
+          ...prev,
+          {
+            id: `att-${storageId}`,
+            storageId,
+            fileName: file.name,
+            contentType: file.type || undefined,
+            previewUrl,
+          },
+        ]);
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Could not attach file"
+      );
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const post = async () => {
-    if (!active || !draft.trim()) return;
+    if (!active) return;
+    if (!draft.trim() && attachments.length === 0) return;
     setSending(true);
     try {
-      await send({ threadId: active.threadId, body: draft });
+      await send({
+        threadId: active.threadId,
+        body: draft,
+        attachments: attachments.map((file) => ({
+          storageId: file.storageId,
+          fileName: file.fileName,
+          contentType: file.contentType,
+        })),
+      });
+      for (const file of attachments) {
+        if (file.previewUrl) URL.revokeObjectURL(file.previewUrl);
+      }
       setDraft("");
+      setAttachments([]);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not send");
     } finally {
       setSending(false);
     }
   };
+
+  const canSend =
+    !sending &&
+    !uploading &&
+    (Boolean(draft.trim()) || attachments.length > 0);
 
   const listPane = (
     <div
@@ -268,12 +435,43 @@ export function MessagesView() {
                   body={m.body}
                   createdAt={m.createdAt}
                   read={m.read}
+                  attachments={m.attachments}
                 />
               ))}
               <div ref={endRef} />
             </div>
           </div>
           <Separator />
+          {attachments.length > 0 ? (
+            <div className="flex flex-wrap gap-2 border-b px-3 py-2">
+              {attachments.map((file) => (
+                <div
+                  key={file.id}
+                  className="flex max-w-full items-center gap-1.5 rounded-md border bg-muted/40 px-2 py-1 text-xs"
+                >
+                  {file.previewUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={file.previewUrl}
+                      alt=""
+                      className="size-6 rounded object-cover"
+                    />
+                  ) : (
+                    <FileText className="size-3.5 shrink-0 text-muted-foreground" />
+                  )}
+                  <span className="truncate">{file.fileName}</span>
+                  <button
+                    type="button"
+                    className="rounded p-0.5 text-muted-foreground hover:bg-background hover:text-foreground"
+                    aria-label={`Remove ${file.fileName}`}
+                    onClick={() => void removeDraftAttachment(file.id)}
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null}
           <form
             className="flex shrink-0 items-center gap-2 p-3"
             onSubmit={(e) => {
@@ -281,18 +479,22 @@ export function MessagesView() {
               void post();
             }}
           >
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              accept={ACCEPT}
+              multiple
+              onChange={(e) => void onPickFiles(e.target.files)}
+            />
             <Button
               type="button"
               variant="ghost"
               size="icon"
               className="shrink-0"
               aria-label="Attach file"
-              onClick={() =>
-                toast("Attachments", {
-                  description:
-                    "Documents, PDFs, and screenshots can be shared in conversations.",
-                })
-              }
+              disabled={uploading || attachments.length >= MAX_ATTACHMENTS}
+              onClick={() => fileInputRef.current?.click()}
             >
               <Paperclip className="size-4.5" />
             </Button>
@@ -308,7 +510,7 @@ export function MessagesView() {
               size="icon"
               className="shrink-0"
               aria-label="Send message"
-              disabled={sending || !draft.trim()}
+              disabled={!canSend}
             >
               <Send className="size-4" />
             </Button>

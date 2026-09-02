@@ -67,7 +67,7 @@ async function profileHandle(
 export const search = query({
   args: {
     prefix: v.string(),
-    barkCode: v.string(),
+    barkCode: v.optional(v.string()),
   },
   returns: v.array(mentionHit),
   handler: async (ctx, args) => {
@@ -82,33 +82,35 @@ export const search = query({
       hits.push(hit);
     };
 
-    const bark = await ctx.db
-      .query("barks")
-      .withIndex("by_code", (q) => q.eq("code", args.barkCode))
-      .unique();
-    if (bark) {
-      const comments = await ctx.db
-        .query("barkComments")
-        .withIndex("by_bark_created", (q) => q.eq("barkId", bark._id))
-        .take(50);
-      const people = new Map<string, string>();
-      people.set(bark.authorClerkId, bark.authorName);
-      for (const comment of comments) {
-        if (!people.has(comment.authorClerkId)) {
-          people.set(comment.authorClerkId, comment.authorName);
+    if (args.barkCode) {
+      const bark = await ctx.db
+        .query("barks")
+        .withIndex("by_code", (q) => q.eq("code", args.barkCode!))
+        .unique();
+      if (bark) {
+        const comments = await ctx.db
+          .query("barkComments")
+          .withIndex("by_bark_created", (q) => q.eq("barkId", bark._id))
+          .take(50);
+        const people = new Map<string, string>();
+        people.set(bark.authorClerkId, bark.authorName);
+        for (const comment of comments) {
+          if (!people.has(comment.authorClerkId)) {
+            people.set(comment.authorClerkId, comment.authorName);
+          }
         }
-      }
-      for (const [clerkId, name] of people) {
-        const profile = await profileHandle(ctx, clerkId);
-        if (profile) {
-          push(profile);
-        } else {
-          push({
-            handle: slugifyMentionHandle(name),
-            name,
-            kind: "member",
-            href: "",
-          });
+        for (const [clerkId, name] of people) {
+          const profile = await profileHandle(ctx, clerkId);
+          if (profile) {
+            push(profile);
+          } else {
+            push({
+              handle: slugifyMentionHandle(name),
+              name,
+              kind: "member",
+              href: "",
+            });
+          }
         }
       }
     }

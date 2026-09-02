@@ -82,6 +82,7 @@ export function ProfileView({
   user,
   country,
   barks,
+  serverDrafts = [],
   cases,
   savedBarks,
   topTopics,
@@ -94,6 +95,7 @@ export function ProfileView({
   user: User;
   country?: { code: string; name: string; flag: string };
   barks: Bark[];
+  serverDrafts?: Bark[];
   cases: AccountabilityCase[];
   savedBarks: Bark[];
   topTopics: { slug: string; count: number }[];
@@ -595,7 +597,7 @@ export function ProfileView({
                         Saved ({savedItems.length})
                       </TabsTrigger>
                       <TabsTrigger value="drafts">
-                        Drafts ({draft ? 1 : 0})
+                        Drafts ({serverDrafts.length + (draft ? 1 : 0)})
                       </TabsTrigger>
                     </>
                   ) : null}
@@ -733,6 +735,38 @@ export function ProfileView({
 
                 {isOwner && (
                 <TabsContent value="drafts" className="mt-4 space-y-3">
+                  {serverDrafts.map((b) => (
+                    <Card key={b.id} className="gap-0 p-0">
+                      <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0 space-y-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant="secondary">Draft</Badge>
+                            <Badge
+                              variant="outline"
+                              className={barkTypeMeta[b.type].badgeClass}
+                            >
+                              {barkTypeMeta[b.type].label}
+                            </Badge>
+                            <span className="font-mono text-[11px] text-muted-foreground">
+                              {b.code}
+                            </span>
+                          </div>
+                          <p className="font-medium">{b.title}</p>
+                          <p className="line-clamp-2 text-sm text-muted-foreground">
+                            {b.excerpt || "Continue editing this reaction."}
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 gap-2">
+                          <Button asChild size="sm" variant="outline">
+                            <Link href={`/create?code=${b.code}`}>Edit</Link>
+                          </Button>
+                          <Button asChild size="sm">
+                            <Link href={`/barks/${b.code}`}>Preview</Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
                   {draft ? (
                     <Card className="gap-0 p-0">
                       <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -757,30 +791,23 @@ export function ProfileView({
                           </p>
                         </div>
                         <Button asChild size="sm" className="shrink-0">
-                          <Link
-                            href="/create"
-                          >
-                            Resume
-                          </Link>
+                          <Link href="/create">Resume</Link>
                         </Button>
                       </div>
                     </Card>
-                  ) : (
+                  ) : null}
+                  {serverDrafts.length === 0 && !draft ? (
                     <EmptyState
                       icon={FileText}
                       title="No drafts"
                       description="Drafts you save from the reaction editor will appear here."
                       action={
                         <Button asChild size="sm">
-                          <Link
-                            href="/create"
-                          >
-                            Start a Reaction
-                          </Link>
+                          <Link href="/create">Start a Reaction</Link>
                         </Button>
                       }
                     />
-                  )}
+                  ) : null}
                 </TabsContent>
                 )}
               </Tabs>

@@ -23,6 +23,7 @@ const descriptions: Record<NotificationCategory, string> = {
   reply: "When someone replies to your reactions or reply chains.",
   mention: "When someone mentions you with @.",
   follower: "When someone starts following you.",
+  following: "When someone you follow publishes a reaction.",
   "creator-response":
     "When a creator officially responds to a discussion you follow.",
   evidence: "When evidence is added or a case you follow changes status.",
@@ -35,6 +36,7 @@ const categoryPrefKey: Record<
   | "reply"
   | "mention"
   | "follower"
+  | "followingActivity"
   | "creatorResponse"
   | "evidence"
   | "verification"
@@ -43,6 +45,7 @@ const categoryPrefKey: Record<
   reply: "reply",
   mention: "mention",
   follower: "follower",
+  following: "followingActivity",
   "creator-response": "creatorResponse",
   evidence: "evidence",
   verification: "verification",
@@ -53,6 +56,7 @@ type PrefsState = {
   reply: boolean;
   mention: boolean;
   follower: boolean;
+  followingActivity: boolean;
   creatorResponse: boolean;
   evidence: boolean;
   verification: boolean;
@@ -66,6 +70,7 @@ const defaultPrefs: PrefsState = {
   reply: true,
   mention: true,
   follower: true,
+  followingActivity: true,
   creatorResponse: true,
   evidence: true,
   verification: true,
@@ -91,6 +96,7 @@ export function NotificationSettingsForm() {
       reply: remote.reply,
       mention: remote.mention,
       follower: remote.follower,
+      followingActivity: remote.followingActivity ?? true,
       creatorResponse: remote.creatorResponse,
       evidence: remote.evidence,
       verification: remote.verification,

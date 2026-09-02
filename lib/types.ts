@@ -43,6 +43,7 @@ export type NotificationCategory =
   | "reply"
   | "mention"
   | "follower"
+  | "following"
   | "creator-response"
   | "evidence"
   | "verification"
@@ -153,6 +154,9 @@ export interface Evidence {
   addedByName?: string;
   addedAt: string;
   verified: boolean;
+  attestCount?: number;
+  challengeCount?: number;
+  myVote?: "attest" | "challenge" | null;
 }
 
 export type ContentBlock =
@@ -161,6 +165,29 @@ export type ContentBlock =
   | { kind: "quote"; text: string; attribution?: string }
   | { kind: "evidence"; evidenceId: string }
   | { kind: "list"; items: string[] };
+
+export interface BarkDialogueTurn {
+  role: "creator" | "author";
+  content: string;
+  respondedAt: string;
+  verified: boolean;
+  evidence?: Evidence[];
+}
+
+export interface BarkVersionSummary {
+  version: number;
+  changeNote: string;
+  createdAt: string;
+  title: string;
+  excerpt: string;
+}
+
+export interface BarkClaim {
+  id: string;
+  text: string;
+  status: ClaimStatus;
+  evidenceIndexes: number[];
+}
 
 export interface Bark {
   id: string;
@@ -191,7 +218,14 @@ export interface Bark {
   sourceCreatorId?: string;
   sourceThumbnailUrl?: string;
   creatorResponse?: CreatorOfficialResponse;
+  creatorDialogue?: BarkDialogueTurn[];
+  version?: number;
+  amendedAt?: string;
+  promotedCaseCode?: string;
+  quotedBarkCode?: string;
+  claims?: BarkClaim[];
   live?: boolean;
+  status?: "public" | "draft";
 }
 
 export interface CreatorReview {
@@ -358,4 +392,38 @@ export interface Conversation {
   participantId: string;
   messages: Message[];
   unread: number;
+}
+
+export type LearningResourceType = "video" | "article" | "download";
+
+export type LearningCategory =
+  | "getting-started"
+  | "evidence"
+  | "reactions"
+  | "cases"
+  | "creators"
+  | "platform";
+
+export type LearningResourceStatus = "draft" | "published";
+
+export interface LearningResource {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  type: LearningResourceType;
+  category: LearningCategory;
+  status: LearningResourceStatus;
+  sortOrder: number;
+  durationMinutes?: number;
+  thumbnailUrl?: string;
+  videoUrl?: string;
+  videoPlatform?: SourcePlatform;
+  contentBlocks?: ContentBlock[];
+  fileName?: string;
+  fileContentType?: string;
+  externalDownloadUrl?: string;
+  publishedAt?: string;
+  updatedAt: string;
+  downloadUrl?: string;
 }

@@ -27,6 +27,7 @@ const icons: Record<NotificationCategory, LucideIcon> = {
   reply: MessageCircle,
   mention: MessageCircle,
   follower: UserPlus,
+  following: Bell,
   "creator-response": ShieldCheck,
   evidence: Bell,
   verification: ShieldCheck,

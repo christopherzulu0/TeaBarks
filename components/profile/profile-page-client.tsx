@@ -14,9 +14,14 @@ export function ProfilePageClient() {
   const { isAuthenticated } = useConvexAuth();
   const barkDocs = useQuery(
     api.barks.listMine,
-    isAuthenticated ? {} : "skip"
+    isAuthenticated ? { status: "public" } : "skip"
+  );
+  const draftDocs = useQuery(
+    api.barks.listMine,
+    isAuthenticated ? { status: "draft" } : "skip"
   );
   const barks = barkDocs ? barkDocs.map(toUiBark) : [];
+  const drafts = draftDocs ? draftDocs.map(toUiBark) : [];
 
   if (!isLoaded) return <RouteLoading variant="detail" />;
 
@@ -58,6 +63,7 @@ export function ProfilePageClient() {
       user={user}
       country={country}
       barks={barks}
+      serverDrafts={drafts}
       cases={[]}
       savedBarks={[]}
       topTopics={topTopics}

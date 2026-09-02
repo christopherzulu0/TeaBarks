@@ -23,6 +23,13 @@ const inboxItem = v.object({
   unreadCount: v.number(),
 });
 
+const messageAttachment = v.object({
+  storageId: v.id("_storage"),
+  fileName: v.optional(v.string()),
+  contentType: v.optional(v.string()),
+  url: v.union(v.string(), v.null()),
+});
+
 const messageItem = v.object({
   _id: v.id("messages"),
   senderClerkId: v.string(),
@@ -30,6 +37,7 @@ const messageItem = v.object({
   createdAt: v.number(),
   mine: v.boolean(),
   read: v.boolean(),
+  attachments: v.array(messageAttachment),
 });
 
 function pairKey(
@@ -42,9 +50,13 @@ function pairKey(
   return `${left}:${right}:${kind}:${subjectId}`;
 }
 
-function previewOf(body: string) {
+function previewOf(body: string, attachments?: Array<{ fileName?: string }>) {
   const text = body.trim();
-  return text.length > 140 ? `${text.slice(0, 137)}…` : text;
+  if (text) {
+    return text.length > 140 ? `${text.slice(0, 137)}…` : text;
+  }
+  const first = attachments?.[0]?.fileName?.trim();
+  return first ? `📎 ${first}` : "📎 Attachment";
 }
 
 async function membershipFor(
@@ -226,14 +238,27 @@ export const listMessages = query({
       .withIndex("by_thread_created", (q) => q.eq("threadId", args.threadId))
       .order("desc")
       .take(50);
-    return rows.reverse().map((row) => ({
-      _id: row._id,
-      senderClerkId: row.senderClerkId,
-      body: row.body,
-      createdAt: row.createdAt,
-      mine: row.senderClerkId === clerkId,
-      read: row.senderClerkId === clerkId && otherReadAt >= row.createdAt,
-    }));
+    return await Promise.all(
+      rows.reverse().map(async (row) => {
+        const attachments = await Promise.all(
+          (row.attachments ?? []).map(async (file) => ({
+            storageId: file.storageId,
+            fileName: file.fileName,
+            contentType: file.contentType,
+            url: await ctx.storage.getUrl(file.storageId),
+          }))
+        );
+        return {
+          _id: row._id,
+          senderClerkId: row.senderClerkId,
+          body: row.body,
+          createdAt: row.createdAt,
+          mine: row.senderClerkId === clerkId,
+          read: row.senderClerkId === clerkId && otherReadAt >= row.createdAt,
+          attachments,
+        };
+      })
+    );
   },
 });
 
@@ -319,24 +344,51 @@ export const send = mutation({
   args: {
     threadId: v.id("messageThreads"),
     body: v.string(),
+    attachments: v.optional(
+      v.array(
+        v.object({
+          storageId: v.id("_storage"),
+          fileName: v.optional(v.string()),
+          contentType: v.optional(v.string()),
+        })
+      )
+    ),
   },
   returns: v.id("messages"),
   handler: async (ctx, args) => {
     const identity = await requireIdentity(ctx);
     const me = clerkUserId(identity);
     const body = args.body.trim();
-    if (!body) throw new Error("Write a message first");
+    const attachments = (args.attachments ?? []).slice(0, 5);
+    if (!body && attachments.length === 0) {
+      throw new Error("Write a message or attach a file");
+    }
     const mine = await membershipFor(ctx, args.threadId, me);
     if (!mine) throw new Error("Thread not found");
     const other = await membershipFor(ctx, args.threadId, mine.otherClerkId);
     if (!other) throw new Error("Thread not found");
+
+    for (const file of attachments) {
+      const upload = await ctx.db
+        .query("evidenceUploads")
+        .withIndex("by_storageId", (q) => q.eq("storageId", file.storageId))
+        .unique();
+      if (!upload || upload.uploaderClerkId !== me) {
+        throw new Error("Attachment is not yours");
+      }
+      if (!upload.bound) {
+        await ctx.db.patch(upload._id, { bound: true });
+      }
+    }
+
     const now = Date.now();
-    const preview = previewOf(body);
+    const preview = previewOf(body, attachments);
     const messageId = await ctx.db.insert("messages", {
       threadId: args.threadId,
       senderClerkId: me,
       body,
       createdAt: now,
+      ...(attachments.length > 0 ? { attachments } : {}),
     });
     await ctx.db.patch(args.threadId, {
       lastMessageAt: now,

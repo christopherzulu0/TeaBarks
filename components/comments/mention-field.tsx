@@ -23,12 +23,13 @@ function tokenAtCaret(value: string, caret: number) {
 
 export type MentionFieldHandle = {
   insertAtCaret: (text: string) => void;
+  wrapSelection: (prefix: string, suffix?: string, placeholder?: string) => void;
 };
 
 export const MentionField = React.forwardRef<
   MentionFieldHandle,
   {
-    barkCode: string;
+    barkCode?: string;
     value: string;
     onChange: (next: string) => void;
     placeholder?: string;
@@ -48,7 +49,10 @@ export const MentionField = React.forwardRef<
   const results = useQuery(
     api.mentions.search,
     openToken && token
-      ? { prefix: token.prefix, barkCode }
+      ? {
+          prefix: token.prefix,
+          ...(barkCode ? { barkCode } : {}),
+        }
       : "skip"
   );
   const hits = results ?? [];
@@ -93,7 +97,33 @@ export const MentionField = React.forwardRef<
     });
   };
 
-  React.useImperativeHandle(ref, () => ({ insertAtCaret }), [caret, value, onChange]);
+  const wrapSelection = (
+    prefix: string,
+    suffix = prefix,
+    placeholder = "text"
+  ) => {
+    const el = textareaRef.current;
+    const start = el?.selectionStart ?? caret;
+    const end = el?.selectionEnd ?? caret;
+    const selected = value.slice(start, end) || placeholder;
+    const next =
+      value.slice(0, start) + prefix + selected + suffix + value.slice(end);
+    onChange(next);
+    requestAnimationFrame(() => {
+      const node = textareaRef.current;
+      if (!node) return;
+      node.focus();
+      const cursor = start + prefix.length + selected.length + suffix.length;
+      node.setSelectionRange(cursor, cursor);
+      setCaret(cursor);
+    });
+  };
+
+  React.useImperativeHandle(
+    ref,
+    () => ({ insertAtCaret, wrapSelection }),
+    [caret, value, onChange]
+  );
 
   const syncCaret = () => {
     const el = textareaRef.current;
@@ -114,7 +144,7 @@ export const MentionField = React.forwardRef<
           id={id}
           value={value}
           placeholder={placeholder}
-          aria-label="Write a reply"
+          aria-label={id === "bark-body" ? "Reaction content" : "Write a reply"}
           aria-autocomplete="list"
           className={cn("min-h-20 resize-y", className)}
           onChange={(e) => {

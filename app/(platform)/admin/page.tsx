@@ -11,6 +11,7 @@ import { AdminUsers } from "@/components/admin/admin-users";
 import { CaseReviewQueue } from "@/components/admin/case-review-queue";
 import { ClerkSyncPanel } from "@/components/admin/clerk-sync-panel";
 import { ContestAdminPanel } from "@/components/admin/contest-admin";
+import { AdminLearningPanel } from "@/components/admin/admin-learning";
 import { VerificationQueue } from "@/components/admin/verification-queue";
 import { WriterApplicationsQueue } from "@/components/admin/writer-applications-queue";
 import {
@@ -53,6 +54,7 @@ export default function AdminPage() {
             <TabsTrigger value="verification">Verification</TabsTrigger>
             <TabsTrigger value="stories">Stories</TabsTrigger>
             <TabsTrigger value="contests">Contests</TabsTrigger>
+            <TabsTrigger value="learning">Learning</TabsTrigger>
             <TabsTrigger value="moderation">Moderation</TabsTrigger>
           </TabsList>
         </div>
@@ -103,6 +105,10 @@ export default function AdminPage() {
 
         <TabsContent value="contests" className="mt-4 min-w-0">
           <ContestAdminPanel />
+        </TabsContent>
+
+        <TabsContent value="learning" className="mt-4 min-w-0">
+          <AdminLearningPanel />
         </TabsContent>
 
         <TabsContent value="moderation" className="mt-4 min-w-0">

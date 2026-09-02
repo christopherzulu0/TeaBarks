@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/tabs";
 import { countries } from "@/lib/data";
 import { formatDate, formatNumber, gradientFor } from "@/lib/format";
+import { isFollowableCreator } from "@/lib/creators/followable";
 import { platformMeta } from "@/lib/meta";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -182,6 +183,7 @@ export function CreatorProfile({
                 creatorId={creator.id}
                 name={creator.name}
                 handle={creator.handle}
+                followable={isFollowableCreator(creator)}
               />
             </div>
 

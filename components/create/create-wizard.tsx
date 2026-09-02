@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -31,17 +31,30 @@ import {
 } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMutation as useConvexMutation } from "convex/react";
+import {
+  useMutation as useConvexMutation,
+  useQuery as useConvexQuery,
+} from "convex/react";
 import { toast } from "sonner";
-import { publishBark } from "@/app/actions/barks";
+import { BarkContent } from "@/components/bark/bark-content";
+import { TopicPicker } from "@/components/bark/bark-topics";
+import { QuotedBarkCard } from "@/components/bark/quoted-bark-card";
+import {
+  MentionField,
+  type MentionFieldHandle,
+} from "@/components/comments/mention-field";
+import { publishBark, updateBarkDraft } from "@/app/actions/barks";
 import { getCreatorByExternalIdentityAction } from "@/app/actions/creators";
 import { analyzeSourceUrl } from "@/app/actions/sources";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import { barkKeys } from "@/lib/barks/query";
+import {
+  parseBodyToBlocks,
+  resolveBlockEvidenceIds,
+} from "@/lib/barks/content-blocks";
+import { barkKeys, toUiBark } from "@/lib/barks/query";
 import { BarkCode } from "@/components/bark-code";
 import { PersonAvatar } from "@/components/person-avatar";
-import { ReadingProse } from "@/components/reading-prose";
 import { PlatformIcon } from "@/components/platform-icon";
 import { SourceThumb } from "@/components/source-thumb";
 import { VerifiedBadge } from "@/components/verified-badge";
@@ -71,7 +84,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 import { detectSource } from "@/lib/detect-source";
 import { getCreator, sources } from "@/lib/data";
 import { formatDate, formatNumber } from "@/lib/format";
@@ -82,7 +94,7 @@ import {
   STORAGE_KEYS,
   writeUserJson,
 } from "@/lib/storage";
-import type { BarkType, Creator, EvidenceType, Source, SourcePlatform } from "@/lib/types";
+import type { BarkType, CaseCategory, Creator, EvidenceType, Source, SourcePlatform } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
@@ -180,6 +192,7 @@ type PersistedDraft = {
   barkType: BarkType | null;
   title: string;
   body: string;
+  topics?: CaseCategory[];
   visibility: string;
   evidence: DraftEvidence[];
 };
@@ -217,6 +230,7 @@ function applyPersistedDraft(
     setBarkType: (v: BarkType | null) => void;
     setTitle: (v: string) => void;
     setBody: (v: string) => void;
+    setTopics: (v: CaseCategory[]) => void;
     setVisibility: (v: string) => void;
     setEvidence: (v: DraftEvidence[]) => void;
     setSource: (v: Source | null) => void;
@@ -231,6 +245,7 @@ function applyPersistedDraft(
   set.setBarkType(draft.barkType);
   set.setTitle(draft.title);
   set.setBody(draft.body);
+  set.setTopics(Array.isArray(draft.topics) ? draft.topics : []);
   set.setVisibility(draft.visibility);
   set.setEvidence(Array.isArray(draft.evidence) ? draft.evidence : []);
   set.setSource(source);
@@ -244,6 +259,14 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
   const queryClient = useQueryClient();
   const barkTypes = React.useMemo(() => Object.keys(barkTypeMeta) as BarkType[], []);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editCode = searchParams.get("code")?.trim().toUpperCase() ?? "";
+  const quoteParam = searchParams.get("quote")?.trim().toUpperCase() ?? "";
+  const existingDraftDoc = useConvexQuery(
+    api.barks.getByCode,
+    editCode ? { code: editCode } : "skip"
+  );
+  const [editingCode, setEditingCode] = React.useState<string | null>(null);
   const [step, setStep] = React.useState(0);
   const [url, setUrl] = React.useState("");
   const [source, setSource] = React.useState<Source | null>(null);
@@ -261,6 +284,8 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
   const [barkType, setBarkType] = React.useState<BarkType | null>(null);
   const [title, setTitle] = React.useState("");
   const [body, setBody] = React.useState("");
+  const [quotedBarkCode, setQuotedBarkCode] = React.useState(quoteParam);
+  const [topics, setTopics] = React.useState<CaseCategory[]>([]);
   const [visibility, setVisibility] = React.useState("public");
   const [evidence, setEvidence] = React.useState<DraftEvidence[]>([]);
   const [evTitle, setEvTitle] = React.useState("");
@@ -273,7 +298,12 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
   const registerUpload = useConvexMutation(api.evidenceFiles.registerUpload);
   const deleteUpload = useConvexMutation(api.evidenceFiles.deleteUpload);
   const publishMutation = useMutation({
-    mutationFn: publishBark,
+    mutationFn: async (variables: Parameters<typeof publishBark>[0] & { code?: string }) => {
+      if (variables.code) {
+        return updateBarkDraft(variables.code, variables);
+      }
+      return publishBark(variables);
+    },
     onSuccess: async (result, variables) => {
       removeUserKey(userId, STORAGE_KEYS.barkDraft);
       await queryClient.invalidateQueries({ queryKey: barkKeys.public });
@@ -284,12 +314,13 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
         {
           description:
             variables.status === "draft"
-              ? "You can resume this reaction anytime from Create."
+              ? "You can resume this reaction anytime from your profile."
               : "Your evidence-based response is now live.",
         }
       );
       if (variables.status === "draft") {
-        router.replace("/create");
+        router.replace(`/create?code=${result.code}`);
+        setEditingCode(result.code);
         return;
       }
       router.replace(`/barks/${result.code}`);
@@ -305,11 +336,88 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
     null
   );
   const [draftReady, setDraftReady] = React.useState(false);
-  const bodyRef = React.useRef<HTMLTextAreaElement>(null);
+  const bodyRef = React.useRef<MentionFieldHandle>(null);
+  const hydratedEditRef = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    if (!existingDraftDoc || existingDraftDoc.status !== "draft") return;
+    if (existingDraftDoc.authorClerkId !== userId) return;
+    if (hydratedEditRef.current === existingDraftDoc.code) return;
+    hydratedEditRef.current = existingDraftDoc.code;
+    const ui = toUiBark(existingDraftDoc);
+    setEditingCode(ui.code);
+    setStep(4);
+    setUrl(ui.sourceUrl ?? "");
+    setSource(
+      ui.sourceTitle && ui.sourcePlatform
+        ? {
+            id: ui.sourceId,
+            platform: ui.sourcePlatform,
+            url: ui.sourceUrl ?? "",
+            title: ui.sourceTitle,
+            thumbnailUrl: ui.sourceThumbnailUrl ?? "",
+            creatorId: ui.sourceCreatorId ?? "",
+            publishedAt: ui.publishedAt,
+            category: "",
+            language: "en",
+            barkCount: 1,
+            replyChainCount: 0,
+            caseCount: 0,
+            engagement: 0,
+            evidenceRating: ui.evidenceRating,
+          }
+        : null
+    );
+    if (ui.sourceCreatorName) {
+      setDetectedCreator({
+        id: ui.sourceCreatorId ?? `draft-creator:${ui.code}`,
+        handle: "source",
+        name: ui.sourceCreatorName,
+        bio: "",
+        verified: false,
+        hasTeaBarksProfile: Boolean(ui.sourceCreatorId),
+        platforms: ui.sourcePlatform ? [ui.sourcePlatform] : [],
+        officialLinks: [],
+        followers: 0,
+        country: "",
+        topics: [],
+        totalSources: 1,
+        totalBarksReceived: 0,
+        responseRate: 0,
+        joinedAt: ui.publishedAt,
+      });
+      setCreatorConfirmed(true);
+    }
+    setBarkType(ui.type);
+    setTitle(ui.title);
+    setBody(existingDraftDoc.body);
+    setQuotedBarkCode(ui.quotedBarkCode ?? "");
+    setTopics((ui.topics ?? []) as CaseCategory[]);
+    setVisibility("draft");
+    setEvidence(
+      ui.evidence.map((item, i) => ({
+        id: item.id || `ev-${i}`,
+        type: item.type,
+        title: item.title,
+        url: item.url ?? item.timestamp ?? "",
+        storageId: existingDraftDoc.evidence[i]?.storageId,
+        fileName: item.fileName,
+        contentType: item.contentType,
+      }))
+    );
+    setPendingDraft(null);
+    setDraftBanner(false);
+    setDraftReady(true);
+    toast.message(`Editing draft ${ui.code}`);
+  }, [existingDraftDoc, userId]);
 
   React.useEffect(() => {
     if (!userId) {
       setDraftReady(true);
+      return;
+    }
+    if (editCode) {
+      // Server draft hydration owns readiness when editing by code.
       return;
     }
     const draft = readUserJson<PersistedDraft | null>(
@@ -321,7 +429,7 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
       setPendingDraft(draft);
     }
     setDraftReady(true);
-  }, [userId]);
+  }, [userId, editCode]);
 
   React.useEffect(() => {
     if (!draftReady || !userId || pendingDraft) return;
@@ -334,13 +442,14 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
       barkType,
       title,
       body,
+      topics,
       visibility,
       evidence: evidence.map(({ previewUrl: _preview, ...item }) => item),
     };
     const hasContent =
-      url.trim() || title.trim() || body.trim() || evidence.length > 0 || step > 0;
+      url.trim() || title.trim() || body.trim() || evidence.length > 0 || step > 0 || topics.length > 0;
     if (hasContent) writeUserJson(userId, STORAGE_KEYS.barkDraft, payload);
-  }, [draftReady, userId, pendingDraft, step, url, source, detectedCreator, barkType, title, body, visibility, evidence]);
+  }, [draftReady, userId, pendingDraft, step, url, source, detectedCreator, barkType, title, body, topics, visibility, evidence]);
 
   const draftSetters = {
     setStep,
@@ -348,6 +457,7 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
     setBarkType,
     setTitle,
     setBody,
+    setTopics,
     setVisibility,
     setEvidence,
     setSource,
@@ -384,6 +494,7 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
     setBarkType(null);
     setTitle("");
     setBody("");
+    setTopics([]);
     setVisibility("public");
     setEvidence([]);
     setEvFile(null);
@@ -392,27 +503,16 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
   };
 
   const insertMarkdown = (prefix: string, suffix = prefix, placeholder = "text") => {
-    const el = bodyRef.current;
-    if (!el) {
+    if (!bodyRef.current) {
       setBody((prev) => `${prev}${prefix}${placeholder}${suffix}`);
       return;
     }
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
-    const selected = body.slice(start, end) || placeholder;
-    const next =
-      body.slice(0, start) + prefix + selected + suffix + body.slice(end);
-    setBody(next);
-    requestAnimationFrame(() => {
-      el.focus();
-      const cursor = start + prefix.length + selected.length + suffix.length;
-      el.setSelectionRange(cursor, cursor);
-    });
+    bodyRef.current.wrapSelection(prefix, suffix, placeholder);
   };
 
   const barkCode = React.useMemo(
     () =>
-      `BRK-2026-${String(400 + Math.abs(url.length * 37 + title.length * 13) % 500).padStart(4, "0")}`,
+      `TR-2026-${String(400 + Math.abs(url.length * 37 + title.length * 13) % 500).padStart(4, "0")}`,
     [url, title]
   );
 
@@ -601,6 +701,7 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
       return;
     }
     publishMutation.mutate({
+      ...(editingCode ? { code: editingCode } : {}),
       type: barkType,
       title,
       body,
@@ -613,6 +714,8 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
         ? { sourceCreatorId: creator.id }
         : {}),
       sourceThumbnailUrl: source?.thumbnailUrl,
+      topics,
+      ...(quotedBarkCode ? { quotedBarkCode } : {}),
       evidence: evidence.map((item) => ({
         type: item.type,
         title: item.title,
@@ -627,9 +730,13 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
   return (
     <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
       <div className="space-y-1 text-center">
-        <h1 className="text-2xl font-bold tracking-tight">Create a Reaction</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {editingCode ? "Edit draft reaction" : "Create a Reaction"}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          Every reaction begins with a public source and is built on evidence.
+          {editingCode
+            ? `Updating ${editingCode}. Publish when ready, or save as draft again.`
+            : "Every reaction begins with a public source and is built on evidence."}
         </p>
       </div>
 
@@ -1006,6 +1113,27 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
                     onChange={(e) => setTitle(e.target.value)}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label>Topics</Label>
+                  <TopicPicker value={topics} onChange={setTopics} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="quoted-bark">Quote another Reaction (optional)</Label>
+                  <Input
+                    id="quoted-bark"
+                    placeholder="TR-2026-0341"
+                    value={quotedBarkCode}
+                    onChange={(e) =>
+                      setQuotedBarkCode(e.target.value.trim().toUpperCase())
+                    }
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    Chains research like a quote-post — readers see the linked Reaction card.
+                  </p>
+                  {quotedBarkCode ? (
+                    <QuotedBarkCard code={quotedBarkCode} />
+                  ) : null}
+                </div>
                 <div
                   className="flex flex-wrap items-center gap-1 rounded-md border bg-muted/40 p-1"
                   role="toolbar"
@@ -1044,10 +1172,16 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
                         run: () => insertMarkdown("[", "](https://)", "link text"),
                       },
                       {
-                        icon: ImageIcon,
-                        label: "Image",
-                        run: () =>
-                          insertMarkdown("\n![", "](https://)", "caption"),
+                        icon: Paperclip,
+                        label: "Embed evidence",
+                        run: () => {
+                          if (evidence.length === 0) {
+                            toast.message("Attach evidence first, then embed it");
+                            return;
+                          }
+                          const index = evidence.length - 1;
+                          insertMarkdown(`\n[[ev:${index}]]\n`, "", "");
+                        },
                       },
                     ] as const
                   ).map(({ icon: Icon, label, run }) => (
@@ -1064,8 +1198,8 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
                   ))}
                   <span className="ml-auto pr-2 text-[11px] text-muted-foreground">
                     {body.trim()
-                      ? `${body.trim().split(/\s+/).length} words · Markdown`
-                      : "Markdown supported"}
+                      ? `${body.trim().split(/\s+/).length} words · ## > - [[ev:N]]`
+                      : "## headings · > quotes · - lists · [[ev:N]] embeds"}
                   </span>
                 </div>
                 <Tabs defaultValue="write">
@@ -1074,78 +1208,45 @@ export function CreateWizard({ onBack }: { onBack?: () => void } = {}) {
                     <TabsTrigger value="preview">Preview</TabsTrigger>
                   </TabsList>
                   <TabsContent value="write">
-                    <Textarea
+                    <MentionField
                       ref={bodyRef}
-                      aria-label="Reaction content"
+                      id="bark-body"
+                      value={body}
+                      onChange={setBody}
                       placeholder={
-                        "Build your argument…\n\n## What the source claims\n\n> Quote the exact claim with a timestamp\n\nPresent your evidence, one claim at a time."
+                        "Build your argument… type @ to mention someone\n\n## What the source claims\n\n> Quote the exact claim with a timestamp\n\nPresent your evidence, one claim at a time."
                       }
                       className="min-h-80 resize-y font-serif text-[15px] leading-relaxed"
-                      value={body}
-                      onChange={(e) => setBody(e.target.value)}
                     />
                   </TabsContent>
                   <TabsContent value="preview">
-                    <ReadingProse className="min-h-80 space-y-3 rounded-md border p-4">
-                      {body ? (
-                        body.split("\n").map((line, i) => {
-                          if (line.startsWith("## "))
-                            return (
-                              <h2
-                                key={i}
-                                className="text-lg font-semibold tracking-tight"
-                              >
-                                {line.slice(3)}
-                              </h2>
-                            );
-                          if (line.startsWith("> "))
-                            return (
-                              <blockquote
-                                key={i}
-                                className="border-l-2 border-primary/40 pl-3 italic text-muted-foreground"
-                              >
-                                {line.slice(2)}
-                              </blockquote>
-                            );
-                          if (line.startsWith("- "))
-                            return (
-                              <li key={i} className="ml-4 list-disc">
-                                {line.slice(2)}
-                              </li>
-                            );
-                          if (line.startsWith("!["))
-                            return (
-                              <p
-                                key={i}
-                                className="rounded-md border border-dashed p-3 text-center text-sm text-muted-foreground"
-                              >
-                                Image: {line.match(/!\[(.*?)\]/)?.[1] || "embed"}
-                              </p>
-                            );
-                          if (!line.trim()) return <br key={i} />;
-                          const withInline = line
-                            .replace(
-                              /\*\*(.+?)\*\*/g,
-                              "<strong>$1</strong>"
-                            )
-                            .replace(/\*(.+?)\*/g, "<em>$1</em>")
-                            .replace(
-                              /\[(.+?)\]\((.+?)\)/g,
-                              '<a href="$2" class="text-primary underline">$1</a>'
-                            );
-                          return (
-                            <p
-                              key={i}
-                              dangerouslySetInnerHTML={{ __html: withInline }}
-                            />
-                          );
-                        })
+                    <div className="min-h-80 rounded-md border p-4">
+                      {body.trim() ? (
+                        <BarkContent
+                          content={resolveBlockEvidenceIds(
+                            parseBodyToBlocks(body, evidence.length),
+                            "DRAFT"
+                          )}
+                          evidence={evidence.map((ev, i) => ({
+                            id: `DRAFT-ev-${i}`,
+                            type: ev.type,
+                            title: ev.title,
+                            description: ev.title,
+                            url: ev.previewUrl || ev.url || undefined,
+                            fileName: ev.fileName,
+                            contentType: ev.contentType,
+                            addedById: userId ?? "draft",
+                            addedByName: "You",
+                            addedAt: new Date().toISOString(),
+                            verified: false,
+                          }))}
+                        />
                       ) : (
-                        <p className="text-muted-foreground">
+                        <p className="text-sm text-muted-foreground">
                           Nothing to preview yet.
                         </p>
                       )}
-                    </ReadingProse>
+                    </div>
                   </TabsContent>
                 </Tabs>
               </div>

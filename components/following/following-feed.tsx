@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import { Show, SignInButton } from "@clerk/nextjs";
 import { useConvexAuth, useQuery } from "convex/react";
@@ -28,9 +29,13 @@ function FollowingHeader() {
 
 function FollowingSignedIn() {
   const { isAuthenticated } = useConvexAuth();
+  const [before, setBefore] = React.useState<number | undefined>(undefined);
+  const [items, setItems] = React.useState<ReturnType<typeof toUiBark>[]>([]);
   const barkDocs = useQuery(
     api.barks.listFollowing,
-    isAuthenticated ? {} : "skip"
+    isAuthenticated
+      ? { ...(before !== undefined ? { before } : {}), limit: 20 }
+      : "skip"
   );
   const authors = useQuery(
     api.follows.listMineAuthors,
@@ -41,7 +46,20 @@ function FollowingSignedIn() {
     isAuthenticated ? {} : "skip"
   );
 
-  if (!isAuthenticated || barkDocs === undefined) {
+  React.useEffect(() => {
+    if (!barkDocs) return;
+    const mapped = barkDocs.map(toUiBark);
+    if (before === undefined) {
+      setItems(mapped);
+      return;
+    }
+    setItems((prev) => {
+      const seen = new Set(prev.map((b) => b.id));
+      return [...prev, ...mapped.filter((b) => !seen.has(b.id))];
+    });
+  }, [barkDocs, before]);
+
+  if (!isAuthenticated || (barkDocs === undefined && before === undefined)) {
     return (
       <div className="mx-auto max-w-5xl space-y-4 px-4 py-8">
         <FollowingHeader />
@@ -52,11 +70,13 @@ function FollowingSignedIn() {
     );
   }
 
-  const feed = barkDocs.map(toUiBark);
+  const feed = items;
   const followedCreators = creatorDocs ? creatorDocs.map(toUiCreator) : [];
   const followedAuthors = authors ?? [];
   const hasFollows =
     followedAuthors.length > 0 || followedCreators.length > 0;
+  const canLoadMore =
+    barkDocs !== undefined && barkDocs.length >= 20 && feed.length > 0;
 
   return (
     <div className="mx-auto grid max-w-5xl gap-8 px-4 py-8 lg:grid-cols-[1fr_280px]">
@@ -86,7 +106,27 @@ function FollowingSignedIn() {
               description="Reactions from people you follow will appear here."
             />
           ) : (
-            feed.map((b) => <BarkCard key={b.id} bark={b} />)
+            <>
+              {feed.map((b) => (
+                <BarkCard key={b.id} bark={b} compactActions />
+              ))}
+              {canLoadMore ? (
+                <div className="flex justify-center pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const oldest = feed[feed.length - 1];
+                      if (!oldest) return;
+                      setBefore(new Date(oldest.publishedAt).getTime());
+                    }}
+                  >
+                    Load more
+                  </Button>
+                </div>
+              ) : null}
+            </>
           )}
         </div>
       </div>

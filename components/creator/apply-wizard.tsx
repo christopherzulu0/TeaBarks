@@ -45,6 +45,7 @@ import {
 } from "@/app/actions/creators";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { REACTION_PLURAL } from "@/lib/brand";
 import { topics } from "@/lib/data";
 import { platformMeta } from "@/lib/meta";
 import type { Creator, SourcePlatform } from "@/lib/types";
@@ -313,8 +314,8 @@ export function ApplyWizard() {
               ) : null}{" "}
               is with the verification team. Once approved, your profile gets the{" "}
               <BadgeCheck className="inline size-4 text-verified" aria-hidden />{" "}
-              verified badge and you can post Official Responses to barks and
-              cases about your content.
+              verified badge and you can post Official Responses to{" "}
+              {REACTION_PLURAL.toLowerCase()} and cases about your content.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center gap-2">
@@ -366,7 +367,8 @@ export function ApplyWizard() {
         <p className="text-sm text-muted-foreground">
           Verify that you own the public channels being discussed on TypeReact.
           Verified creators get a badge, an official profile, and the ability to
-          respond to barks and accountability cases about their content.
+          respond to {REACTION_PLURAL.toLowerCase()} and accountability cases
+          about their content.
         </p>
       </div>
 

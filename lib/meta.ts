@@ -136,6 +136,7 @@ export const notificationCategoryMeta: Record<
   reply: { label: "Replies" },
   mention: { label: "Mentions" },
   follower: { label: "Followers" },
+  following: { label: "Following" },
   "creator-response": { label: "Creator Responses" },
   evidence: { label: "Evidence Updates" },
   verification: { label: "Verification" },

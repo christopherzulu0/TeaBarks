@@ -19,6 +19,7 @@ const PREF_KEY: Record<
   | "reply"
   | "mention"
   | "follower"
+  | "followingActivity"
   | "creatorResponse"
   | "evidence"
   | "verification"
@@ -27,6 +28,7 @@ const PREF_KEY: Record<
   reply: "reply",
   mention: "mention",
   follower: "follower",
+  following: "followingActivity",
   "creator-response": "creatorResponse",
   evidence: "evidence",
   verification: "verification",
@@ -39,6 +41,7 @@ function defaultPrefs(clerkUserId: string) {
     reply: true,
     mention: true,
     follower: true,
+    followingActivity: true,
     creatorResponse: true,
     evidence: true,
     verification: true,
@@ -70,6 +73,7 @@ export function prefsOrDefault(
     reply: row.reply,
     mention: row.mention,
     follower: row.follower,
+    followingActivity: row.followingActivity ?? true,
     creatorResponse: row.creatorResponse,
     evidence: row.evidence,
     verification: row.verification,
@@ -217,6 +221,51 @@ export async function caseAudienceClerkIds(
       .unique();
     if (creator?.applicantClerkId) ids.add(creator.applicantClerkId);
   }
+  return [...ids].slice(0, 50);
+}
+
+export async function barkAudienceClerkIds(
+  ctx: MutationCtx,
+  bark: Doc<"barks">
+) {
+  const ids = new Set<string>();
+  ids.add(bark.authorClerkId);
+  const saves = await ctx.db
+    .query("barkSaves")
+    .withIndex("by_bark_user", (q) => q.eq("barkId", bark._id))
+    .take(50);
+  for (const row of saves) ids.add(row.clerkUserId);
+  if (bark.sourceCreatorId) {
+    const follows = await ctx.db
+      .query("creatorFollows")
+      .withIndex("by_creator_user", (q) =>
+        q.eq("creatorId", bark.sourceCreatorId!)
+      )
+      .take(50);
+    for (const row of follows) ids.add(row.clerkUserId);
+  }
+  return [...ids].slice(0, 50);
+}
+
+export async function followersOfAuthorClerkIds(
+  ctx: MutationCtx,
+  authorClerkId: string,
+  sourceCreatorId?: Doc<"barks">["sourceCreatorId"]
+) {
+  const ids = new Set<string>();
+  const authorFollowers = await ctx.db
+    .query("userFollows")
+    .withIndex("by_target_user", (q) => q.eq("targetClerkId", authorClerkId))
+    .take(50);
+  for (const row of authorFollowers) ids.add(row.clerkUserId);
+  if (sourceCreatorId) {
+    const creatorFollowers = await ctx.db
+      .query("creatorFollows")
+      .withIndex("by_creator_user", (q) => q.eq("creatorId", sourceCreatorId))
+      .take(50);
+    for (const row of creatorFollowers) ids.add(row.clerkUserId);
+  }
+  ids.delete(authorClerkId);
   return [...ids].slice(0, 50);
 }
 
