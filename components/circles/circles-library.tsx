@@ -4,9 +4,10 @@ import * as React from "react";
 import Link from "next/link";
 import { Show, SignInButton } from "@clerk/nextjs";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { Users } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/empty-state";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,63 @@ import { topicSlugs } from "@/lib/topics";
 import type { CaseCategory } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
+
+function InviteRow({
+  circleName,
+  inviterName,
+  focused,
+  onAccept,
+  onDecline,
+}: {
+  circleName: string;
+  inviterName: string;
+  focused?: boolean;
+  onAccept: () => void;
+  onDecline: () => void;
+}) {
+  return (
+    <li
+      className={cn(
+        "flex flex-col gap-2 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between",
+        focused && "border-primary bg-primary/5 ring-2 ring-primary/30"
+      )}
+    >
+      <div className="min-w-0">
+        <p className="font-medium">{circleName}</p>
+        <p className="text-xs text-muted-foreground">
+          Invited by {inviterName}
+        </p>
+      </div>
+      <div className="flex shrink-0 gap-2">
+        <Button size="sm" onClick={onAccept}>
+          Accept
+        </Button>
+        <Button size="sm" variant="outline" onClick={onDecline}>
+          Decline
+        </Button>
+      </div>
+    </li>
+  );
+}
+
+function CircleListSkeleton() {
+  return (
+    <ul className="space-y-2">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <li key={i}>
+          <Card className="gap-2 p-4">
+            <div className="h-5 w-2/5 animate-pulse rounded-md bg-muted" />
+            <div className="flex gap-2">
+              <div className="h-5 w-20 animate-pulse rounded-full bg-muted" />
+              <div className="h-5 w-16 animate-pulse rounded-full bg-muted" />
+              <div className="h-5 w-24 animate-pulse rounded-md bg-muted" />
+            </div>
+          </Card>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function CirclesSignedIn() {
   const router = useRouter();
@@ -73,9 +131,7 @@ function CirclesSignedIn() {
       ? pendingInvites.find((row) => row._id === focusInviteId)
       : undefined;
   const inviteMissing =
-    focusingInvite &&
-    pendingInvites !== undefined &&
-    !focusedInvite;
+    focusingInvite && pendingInvites !== undefined && !focusedInvite;
 
   const clearInviteQuery = () => {
     router.replace("/circles", { scroll: false });
@@ -84,21 +140,31 @@ function CirclesSignedIn() {
   const loadingCircles = circles === undefined;
   const loadingInvites = pendingInvites === undefined;
 
-  if (loadingCircles && !focusingInvite) {
-    return (
-      <p className="py-12 text-center text-sm text-muted-foreground">
-        Loading circles…
-      </p>
-    );
-  }
-
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Research circles
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Small private workspaces for focused research — not public feeds.
+          </p>
+        </div>
+        {!showCreate && !focusingInvite ? (
+          <Button type="button" size="sm" onClick={() => setShowCreate(true)}>
+            <Plus className="size-4" aria-hidden />
+            Create a circle
+          </Button>
+        ) : null}
+      </div>
+
       {focusingInvite ? (
         <div ref={pendingRef} id="pending-invites" className="scroll-mt-24">
           {loadingInvites ? (
             <Card className="gap-3 p-4">
-              <p className="text-sm text-muted-foreground">Loading invite…</p>
+              <div className="h-4 w-40 animate-pulse rounded-md bg-muted" />
+              <div className="h-16 animate-pulse rounded-lg bg-muted" />
             </Card>
           ) : inviteMissing ? (
             <Card className="gap-3 p-4">
@@ -122,72 +188,50 @@ function CirclesSignedIn() {
                 </p>
               </div>
               <ul className="space-y-2">
-                {pendingInvites.map((invite) => {
-                  const isFocused = invite._id === focusInviteId;
-                  return (
-                    <li
-                      key={invite._id}
-                      className={cn(
-                        "flex flex-col gap-2 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between",
-                        isFocused && "border-primary bg-primary/5 ring-2 ring-primary/30"
-                      )}
-                    >
-                      <div className="min-w-0">
-                        <p className="font-medium">{invite.circleName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Invited by {invite.inviterName}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            void (async () => {
-                              try {
-                                const id = await acceptInvite({
-                                  inviteId: invite._id as Id<"researchCircleInvites">,
-                                });
-                                toast.success("Joined circle");
-                                router.push(`/circles/${id}`);
-                              } catch (error) {
-                                toast.error(
-                                  error instanceof Error
-                                    ? error.message
-                                    : "Could not accept"
-                                );
-                              }
-                            })();
-                          }}
-                        >
-                          Accept
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            void (async () => {
-                              try {
-                                await declineInvite({
-                                  inviteId: invite._id as Id<"researchCircleInvites">,
-                                });
-                                toast.success("Invite declined");
-                                clearInviteQuery();
-                              } catch (error) {
-                                toast.error(
-                                  error instanceof Error
-                                    ? error.message
-                                    : "Could not decline"
-                                );
-                              }
-                            })();
-                          }}
-                        >
-                          Decline
-                        </Button>
-                      </div>
-                    </li>
-                  );
-                })}
+                {pendingInvites.map((invite) => (
+                  <InviteRow
+                    key={invite._id}
+                    circleName={invite.circleName}
+                    inviterName={invite.inviterName}
+                    focused={invite._id === focusInviteId}
+                    onAccept={() => {
+                      void (async () => {
+                        try {
+                          const id = await acceptInvite({
+                            inviteId:
+                              invite._id as Id<"researchCircleInvites">,
+                          });
+                          toast.success("Joined circle");
+                          router.push(`/circles/${id}`);
+                        } catch (error) {
+                          toast.error(
+                            error instanceof Error
+                              ? error.message
+                              : "Could not accept"
+                          );
+                        }
+                      })();
+                    }}
+                    onDecline={() => {
+                      void (async () => {
+                        try {
+                          await declineInvite({
+                            inviteId:
+                              invite._id as Id<"researchCircleInvites">,
+                          });
+                          toast.success("Invite declined");
+                          clearInviteQuery();
+                        } catch (error) {
+                          toast.error(
+                            error instanceof Error
+                              ? error.message
+                              : "Could not decline"
+                          );
+                        }
+                      })();
+                    }}
+                  />
+                ))}
               </ul>
             </Card>
           ) : null}
@@ -202,75 +246,56 @@ function CirclesSignedIn() {
           </div>
           <ul className="space-y-2">
             {pendingInvites.map((invite) => (
-              <li
+              <InviteRow
                 key={invite._id}
-                className="flex flex-col gap-2 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="min-w-0">
-                  <p className="font-medium">{invite.circleName}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Invited by {invite.inviterName}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      void (async () => {
-                        try {
-                          const id = await acceptInvite({
-                            inviteId: invite._id,
-                          });
-                          toast.success("Joined circle");
-                          router.push(`/circles/${id}`);
-                        } catch (error) {
-                          toast.error(
-                            error instanceof Error
-                              ? error.message
-                              : "Could not accept"
-                          );
-                        }
-                      })();
-                    }}
-                  >
-                    Accept
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      void (async () => {
-                        try {
-                          await declineInvite({ inviteId: invite._id });
-                          toast.success("Invite declined");
-                        } catch (error) {
-                          toast.error(
-                            error instanceof Error
-                              ? error.message
-                              : "Could not decline"
-                          );
-                        }
-                      })();
-                    }}
-                  >
-                    Decline
-                  </Button>
-                </div>
-              </li>
+                circleName={invite.circleName}
+                inviterName={invite.inviterName}
+                onAccept={() => {
+                  void (async () => {
+                    try {
+                      const id = await acceptInvite({
+                        inviteId: invite._id,
+                      });
+                      toast.success("Joined circle");
+                      router.push(`/circles/${id}`);
+                    } catch (error) {
+                      toast.error(
+                        error instanceof Error
+                          ? error.message
+                          : "Could not accept"
+                      );
+                    }
+                  })();
+                }}
+                onDecline={() => {
+                  void (async () => {
+                    try {
+                      await declineInvite({ inviteId: invite._id });
+                      toast.success("Invite declined");
+                    } catch (error) {
+                      toast.error(
+                        error instanceof Error
+                          ? error.message
+                          : "Could not decline"
+                      );
+                    }
+                  })();
+                }}
+              />
             ))}
           </ul>
         </Card>
       ) : null}
 
-      {!showCreate ? (
+      {focusingInvite && !showCreate ? (
         <Button
           type="button"
-          variant={focusingInvite ? "ghost" : "outline"}
+          variant="ghost"
           size="sm"
-          className={focusingInvite ? "px-0" : undefined}
+          className="px-0"
           onClick={() => setShowCreate(true)}
         >
-          {focusingInvite ? "Create a circle instead" : "Create a circle"}
+          Create a circle instead
         </Button>
       ) : null}
 
@@ -278,7 +303,7 @@ function CirclesSignedIn() {
         <Card className="gap-4 p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-sm font-semibold">Start a research circle</h2>
+              <h2 className="text-sm font-semibold">New circle</h2>
               <p className="text-xs text-muted-foreground">
                 Private workspace (max 40) anchored to a case or topic.
               </p>
@@ -357,39 +382,41 @@ function CirclesSignedIn() {
               </div>
             )}
           </div>
-          <Button
-            disabled={busy}
-            onClick={() => {
-              void (async () => {
-                setBusy(true);
-                try {
-                  const id = await create({
-                    name,
-                    description: description || undefined,
-                    anchorKind,
-                    ...(anchorKind === "case" ? { caseCode } : { topic }),
-                  });
-                  toast.success("Circle created");
-                  router.push(`/circles/${id}`);
-                } catch (error) {
-                  toast.error(
-                    error instanceof Error
-                      ? error.message
-                      : "Could not create circle"
-                  );
-                } finally {
-                  setBusy(false);
-                }
-              })();
-            }}
-          >
-            Create circle
-          </Button>
+          <div className="flex justify-end">
+            <Button
+              disabled={busy}
+              onClick={() => {
+                void (async () => {
+                  setBusy(true);
+                  try {
+                    const id = await create({
+                      name,
+                      description: description || undefined,
+                      anchorKind,
+                      ...(anchorKind === "case" ? { caseCode } : { topic }),
+                    });
+                    toast.success("Circle created");
+                    router.push(`/circles/${id}`);
+                  } catch (error) {
+                    toast.error(
+                      error instanceof Error
+                        ? error.message
+                        : "Could not create circle"
+                    );
+                  } finally {
+                    setBusy(false);
+                  }
+                })();
+              }}
+            >
+              {busy ? "Creating…" : "Create circle"}
+            </Button>
+          </div>
         </Card>
       ) : null}
 
       {loadingCircles ? (
-        <p className="text-sm text-muted-foreground">Loading your circles…</p>
+        <CircleListSkeleton />
       ) : circles.length === 0 ? (
         <EmptyState
           icon={Users}
@@ -398,23 +425,34 @@ function CirclesSignedIn() {
         />
       ) : (
         <ul className="space-y-2">
-          {circles.map((circle) => (
-            <li key={circle._id}>
-              <Link href={`/circles/${circle._id}`}>
-                <Card className="gap-1 p-4 transition-colors hover:border-primary/40">
-                  <p className="font-medium">{circle.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {circle.anchorKind === "case"
-                      ? `Case ${circle.caseCode}`
-                      : circle.topic
-                        ? caseCategoryMeta[circle.topic]?.label
-                        : "Topic"}{" "}
-                    · {circle.memberCount} members · {circle.myRole}
-                  </p>
-                </Card>
-              </Link>
-            </li>
-          ))}
+          {circles.map((circle) => {
+            const anchorLabel =
+              circle.anchorKind === "case"
+                ? `Case ${circle.caseCode}`
+                : circle.topic
+                  ? caseCategoryMeta[circle.topic]?.label
+                  : "Topic";
+            return (
+              <li key={circle._id}>
+                <Link href={`/circles/${circle._id}`}>
+                  <Card className="gap-2 p-4 transition-colors hover:border-primary/30 hover:bg-muted/40">
+                    <p className="font-medium">{circle.name}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="secondary">{anchorLabel}</Badge>
+                      <Badge variant="outline" className="capitalize">
+                        {circle.myRole}
+                      </Badge>
+                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                        <Users className="size-3.5" aria-hidden />
+                        {circle.memberCount}{" "}
+                        {circle.memberCount === 1 ? "member" : "members"}
+                      </span>
+                    </div>
+                  </Card>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
@@ -424,23 +462,27 @@ function CirclesSignedIn() {
 export function CirclesLibrary() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Research circles</h1>
-        <p className="text-sm text-muted-foreground">
-          Small private workspaces for focused research — not public feeds.
-        </p>
-      </div>
       <Show when="signed-out">
-        <EmptyState
-          icon={Users}
-          title="Sign in to use research circles"
-          description="Create a private circle around a case or topic, or accept an invite when one arrives."
-          action={
-            <SignInButton>
-              <Button>Sign in</Button>
-            </SignInButton>
-          }
-        />
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Research circles
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Small private workspaces for focused research — not public feeds.
+            </p>
+          </div>
+          <EmptyState
+            icon={Users}
+            title="Sign in to use research circles"
+            description="Create a private circle around a case or topic, or accept an invite when one arrives."
+            action={
+              <SignInButton>
+                <Button>Sign in</Button>
+              </SignInButton>
+            }
+          />
+        </div>
       </Show>
       <Show when="signed-in">
         <CirclesSignedIn />

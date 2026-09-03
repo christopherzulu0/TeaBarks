@@ -23,7 +23,7 @@ const items = [
   // { href: "/settings/security", label: "Security", icon: ShieldCheck },
   { href: "/settings/notifications", label: "Notifications", icon: Bell },
   { href: "/settings/reading", label: "Reading", icon: BookOpen },
-  { href: "/settings/language", label: "Language", icon: Languages },
+  // { href: "/settings/language", label: "Language", icon: Languages },
   { href: "/settings/country", label: "Country", icon: Globe },
   // { href: "/settings/accounts", label: "Connected Accounts", icon: Link2 },
   // { href: "/settings/organization", label: "Organization", icon: Building2 },

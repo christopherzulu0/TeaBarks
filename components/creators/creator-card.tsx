@@ -40,7 +40,7 @@ export function CreatorCard({
       href={`/creators/${creator.handle}`}
       className={cn("group block h-full", className)}
     >
-      <Card className="h-full gap-0 overflow-hidden p-0 transition-all group-hover:-translate-y-0.5 group-hover:border-primary/40 group-hover:shadow-md">
+      <Card className="h-full gap-0 overflow-hidden p-0 transition-colors group-hover:border-primary/40">
         <div
           className={cn(
             "relative h-20 bg-gradient-to-br sm:h-24",
@@ -150,7 +150,7 @@ export function CreatorCard({
           </div>
 
           {featured && (
-            <p className="rounded-md bg-muted/60 px-2.5 py-1.5 text-[11px] text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground">
               High discussion volume · {creator.totalSources} indexed sources
             </p>
           )}

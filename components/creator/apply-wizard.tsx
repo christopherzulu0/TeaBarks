@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { CountrySelect } from "@/components/profile/country-select";
 import {
@@ -70,6 +71,45 @@ function generateVerificationId() {
     suffix += chars[Math.floor(Math.random() * chars.length)];
   }
   return `TR-${suffix}`;
+}
+
+function ApplyPageChrome({
+  children,
+  bare = false,
+}: {
+  children: React.ReactNode;
+  bare?: boolean;
+}) {
+  return (
+    <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
+      <div className="space-y-4">
+        <Button variant="ghost" size="sm" className="-ml-2 w-fit" asChild>
+          <Link href="/creators">
+            <ArrowLeft /> Back to creators
+          </Link>
+        </Button>
+        {!bare ? (
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <BadgeCheck className="size-5 text-primary" aria-hidden />
+            </span>
+            <div className="min-w-0 space-y-1">
+              <h1 className="text-2xl font-bold tracking-tight">
+                Become a Creator
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Verify that you own the public channels being discussed on
+                TypeReact. Verified creators get a badge, an official profile,
+                and the ability to respond to {REACTION_PLURAL.toLowerCase()}{" "}
+                and accountability cases about their content.
+              </p>
+            </div>
+          </div>
+        ) : null}
+      </div>
+      {children}
+    </div>
+  );
 }
 
 function Stepper({ step }: { step: number }) {
@@ -106,6 +146,33 @@ function Stepper({ step }: { step: number }) {
         value={((step + 1) / STEPS.length) * 100}
         aria-label={`Step ${step + 1} of ${STEPS.length}`}
       />
+      <p className="text-center text-xs text-muted-foreground sm:hidden">
+        Step {step + 1} of {STEPS.length} · {STEPS[step]}
+      </p>
+    </div>
+  );
+}
+
+export function ApplyWizardSkeleton() {
+  return (
+    <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
+      <Skeleton className="h-8 w-36" />
+      <div className="flex items-start gap-3">
+        <Skeleton className="size-10 rounded-lg" />
+        <div className="space-y-2">
+          <Skeleton className="h-7 w-52" />
+          <Skeleton className="h-4 w-72 max-w-full" />
+        </div>
+      </div>
+      <div className="space-y-3">
+        <div className="flex justify-between gap-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="size-7 rounded-full" />
+          ))}
+        </div>
+        <Skeleton className="h-2 w-full" />
+      </div>
+      <Skeleton className="h-72 w-full rounded-xl" />
     </div>
   );
 }
@@ -295,39 +362,44 @@ export function ApplyWizard() {
 
   if (applicationCode) {
     return (
-      <div className="mx-auto max-w-xl px-4 py-16">
+      <ApplyPageChrome bare>
         <Card>
-          <CardHeader className="items-center text-center">
-            <span className="mb-2 flex size-14 items-center justify-center rounded-full bg-mixed/20">
-              <Clock3 className="size-7 text-mixed-foreground dark:text-mixed" aria-hidden />
+          <CardHeader className="items-center space-y-3 text-center">
+            <span className="flex size-14 items-center justify-center rounded-full bg-mixed/20">
+              <Clock3
+                className="size-7 text-mixed-foreground dark:text-mixed"
+                aria-hidden
+              />
             </span>
-            <CardTitle>Application pending review</CardTitle>
-            <CardDescription className="leading-relaxed">
-              Your creator application{" "}
-              <span className="font-mono">{applicationCode}</span>
+            <div className="space-y-2">
+              <CardTitle>Application pending review</CardTitle>
+              <Badge variant="secondary" className="font-mono">
+                {applicationCode}
+              </Badge>
               {submittedVerificationId ? (
-                <>
-                  {" "}
-                  (verification ID{" "}
-                  <span className="font-mono">{submittedVerificationId}</span>)
-                </>
-              ) : null}{" "}
-              is with the verification team. Once approved, your profile gets the{" "}
+                <Badge variant="outline" className="font-mono">
+                  {submittedVerificationId}
+                </Badge>
+              ) : null}
+            </div>
+            <CardDescription className="max-w-md leading-relaxed">
+              Your creator application is with the verification team. Once
+              approved, your profile gets the{" "}
               <BadgeCheck className="inline size-4 text-verified" aria-hidden />{" "}
               verified badge and you can post Official Responses to{" "}
               {REACTION_PLURAL.toLowerCase()} and cases about your content.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex justify-center gap-2">
-            <Button asChild>
+          <CardContent className="flex flex-wrap justify-center gap-2">
+            <Button size="sm" asChild>
               <Link href="/profile">Go to profile</Link>
             </Button>
-            <Button asChild variant="outline">
-              <Link href="/">Back to home</Link>
+            <Button size="sm" variant="outline" asChild>
+              <Link href="/creators">Back to creators</Link>
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </ApplyPageChrome>
     );
   }
 
@@ -338,40 +410,30 @@ export function ApplyWizard() {
     !claimEligibility.allowed
   ) {
     return (
-      <div className="mx-auto max-w-xl px-4 py-16">
+      <ApplyPageChrome bare>
         <Card>
-          <CardHeader className="items-center text-center">
+          <CardHeader className="items-center space-y-3 text-center">
             <CardTitle>Cannot claim this profile</CardTitle>
-            <CardDescription className="leading-relaxed">
+            <CardDescription className="max-w-md leading-relaxed">
               {claimEligibility.reason ??
                 "You are not eligible to claim this creator profile."}
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex justify-center gap-2">
-            <Button asChild variant="outline">
+          <CardContent className="flex flex-wrap justify-center gap-2">
+            <Button size="sm" variant="outline" asChild>
               <Link href="/creators">Browse creators</Link>
             </Button>
-            <Button asChild>
+            <Button size="sm" asChild>
               <Link href="/create">Publish a reaction</Link>
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </ApplyPageChrome>
     );
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8 px-4 py-8">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight">Become a Creator</h1>
-        <p className="text-sm text-muted-foreground">
-          Verify that you own the public channels being discussed on TypeReact.
-          Verified creators get a badge, an official profile, and the ability to
-          respond to {REACTION_PLURAL.toLowerCase()} and accountability cases
-          about their content.
-        </p>
-      </div>
-
+    <ApplyPageChrome>
       <Stepper step={step} />
 
       {step === 0 && (
@@ -737,6 +799,6 @@ export function ApplyWizard() {
           </Button>
         )}
       </div>
-    </div>
+    </ApplyPageChrome>
   );
 }

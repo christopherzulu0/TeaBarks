@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
+import { ArrowLeft, MoreHorizontal, Pencil, Users } from "lucide-react";
 import { toast } from "sonner";
 import { MentionField } from "@/components/comments/mention-field";
 import { MentionText } from "@/components/comments/mention-text";
@@ -16,10 +17,18 @@ import {
   useCirclePostAttachments,
   type DraftAttachment,
 } from "@/components/circles/post-attachments";
+import { EmptyState } from "@/components/empty-state";
 import { PersonAvatar } from "@/components/person-avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,6 +41,11 @@ import { useRouter } from "next/navigation";
 type PendingConfirm =
   | {
       kind: "transfer";
+      memberClerkId: string;
+      memberName: string;
+    }
+  | {
+      kind: "kick";
       memberClerkId: string;
       memberName: string;
     }
@@ -105,17 +119,40 @@ export function CircleDetail({
 
   if (!isSignedIn) {
     return (
-      <p className="py-16 text-center text-sm text-muted-foreground">
-        Sign in to view this circle.
-      </p>
+      <div className="mx-auto max-w-5xl space-y-4 px-4 py-16 text-center">
+        <p className="text-sm text-muted-foreground">
+          Sign in to view this circle.
+        </p>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/circles">Back to circles</Link>
+        </Button>
+      </div>
     );
   }
 
   if (detail === undefined || posts === undefined) {
     return (
-      <p className="py-16 text-center text-sm text-muted-foreground">
-        Loading circle…
-      </p>
+      <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
+        <div className="h-4 w-24 animate-pulse rounded-md bg-muted" />
+        <div className="space-y-2">
+          <div className="h-8 w-1/2 animate-pulse rounded-md bg-muted" />
+          <div className="flex gap-2">
+            <div className="h-5 w-24 animate-pulse rounded-full bg-muted" />
+            <div className="h-5 w-20 animate-pulse rounded-full bg-muted" />
+          </div>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+          <div className="space-y-4">
+            <Card className="gap-3 p-4">
+              <div className="h-4 w-40 animate-pulse rounded-md bg-muted" />
+              <div className="h-24 animate-pulse rounded-md bg-muted" />
+            </Card>
+            <Card className="h-28 animate-pulse bg-muted/60 p-4" />
+            <Card className="h-28 animate-pulse bg-muted/60 p-4" />
+          </div>
+          <Card className="h-64 animate-pulse bg-muted/60 p-4" />
+        </div>
+      </div>
     );
   }
 
@@ -135,11 +172,25 @@ export function CircleDetail({
   const { circle, members } = detail;
   const isOwner = circle.myRole === "owner";
 
+  const anchorLabel =
+    circle.anchorKind === "case"
+      ? `Case ${circle.caseCode}`
+      : circle.topic
+        ? caseCategoryMeta[circle.topic]?.label
+        : "Topic";
+  const anchorHref =
+    circle.anchorKind === "case"
+      ? `/cases/${circle.caseCode}`
+      : `/topics/${circle.topic}`;
+
   return (
-    <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
-      <div className="space-y-1">
-        <Button asChild variant="ghost" size="sm" className="px-0">
-          <Link href="/circles">← Circles</Link>
+    <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
+      <div className="space-y-3">
+        <Button asChild variant="ghost" size="sm" className="h-8 px-0">
+          <Link href="/circles">
+            <ArrowLeft className="size-4" aria-hidden />
+            Circles
+          </Link>
         </Button>
         {editing ? (
           <Card className="gap-3 p-4">
@@ -160,7 +211,14 @@ export function CircleDetail({
                 className="min-h-16"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex justify-end gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setEditing(false)}
+              >
+                Cancel
+              </Button>
               <Button
                 size="sm"
                 disabled={busy}
@@ -189,19 +247,14 @@ export function CircleDetail({
               >
                 Save
               </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setEditing(false)}
-              >
-                Cancel
-              </Button>
             </div>
           </Card>
         ) : (
           <>
             <div className="flex flex-wrap items-start justify-between gap-2">
-              <h1 className="text-2xl font-bold tracking-tight">{circle.name}</h1>
+              <h1 className="text-2xl font-bold tracking-tight">
+                {circle.name}
+              </h1>
               {isOwner ? (
                 <Button
                   size="sm"
@@ -212,46 +265,37 @@ export function CircleDetail({
                     setEditing(true);
                   }}
                 >
+                  <Pencil className="size-3.5" aria-hidden />
                   Edit
                 </Button>
               ) : null}
             </div>
-            <p className="text-sm text-muted-foreground">
-              {circle.anchorKind === "case" ? (
-                <>
-                  Anchored to case{" "}
-                  <Link
-                    href={`/cases/${circle.caseCode}`}
-                    className="font-medium text-foreground hover:underline"
-                  >
-                    {circle.caseCode}
-                  </Link>
-                </>
-              ) : (
-                <>
-                  Anchored to topic{" "}
-                  <Link
-                    href={`/topics/${circle.topic}`}
-                    className="font-medium text-foreground hover:underline"
-                  >
-                    {circle.topic
-                      ? caseCategoryMeta[circle.topic]?.label
-                      : "Topic"}
-                  </Link>
-                </>
-              )}{" "}
-              · {circle.memberCount} members
-            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary" asChild>
+                <Link href={anchorHref}>{anchorLabel}</Link>
+              </Badge>
+              <Badge variant="outline" className="gap-1">
+                <Users className="size-3" aria-hidden />
+                {circle.memberCount}{" "}
+                {circle.memberCount === 1 ? "member" : "members"}
+              </Badge>
+              <Badge variant="outline" className="capitalize">
+                {circle.myRole}
+              </Badge>
+            </div>
             {circle.description ? (
-              <p className="text-sm">{circle.description}</p>
+              <p className="text-sm text-muted-foreground">
+                {circle.description}
+              </p>
             ) : null}
           </>
         )}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_14rem]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="space-y-4">
           <Card className="gap-3 p-4">
+            <p className="text-sm font-semibold">Share with the circle</p>
             <MentionField
               circleId={circleId}
               value={body}
@@ -263,7 +307,7 @@ export function CircleDetail({
               attachments={composeAttachments}
               onRemove={(id) => void composeAttach.removeAttachment(id)}
             />
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               {composeAttach.attachButton}
               <Button
                 size="sm"
@@ -303,7 +347,12 @@ export function CircleDetail({
           </Card>
 
           {posts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No posts yet.</p>
+            <EmptyState
+              icon={Users}
+              title="No posts yet"
+              description="Share a finding with the circle to start the thread."
+              className="py-12"
+            />
           ) : (
             <ul className="space-y-2">
               {posts.map((post) => {
@@ -333,40 +382,47 @@ export function CircleDetail({
                           </div>
                         </div>
                         {!isEditingPost && (isAuthor || canDelete) ? (
-                          <div className="flex shrink-0 gap-1">
-                            {isAuthor ? (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
                               <Button
-                                size="sm"
+                                size="icon"
                                 variant="ghost"
-                                className="h-7 px-2 text-xs"
-                                onClick={() => {
-                                  revokeDraftPreviews(editAttachments);
-                                  setEditingPostId(post._id);
-                                  setEditPostBody(post.body);
-                                  setEditAttachments(
-                                    listedToDraft(post.attachments)
-                                  );
-                                }}
+                                className="size-7"
+                                aria-label="Post actions"
                               >
-                                Edit
+                                <MoreHorizontal className="size-4" />
                               </Button>
-                            ) : null}
-                            {canDelete ? (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 px-2 text-xs text-destructive"
-                                onClick={() =>
-                                  setPendingConfirm({
-                                    kind: "deletePost",
-                                    postId: post._id,
-                                  })
-                                }
-                              >
-                                Delete
-                              </Button>
-                            ) : null}
-                          </div>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40">
+                              {isAuthor ? (
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    revokeDraftPreviews(editAttachments);
+                                    setEditingPostId(post._id);
+                                    setEditPostBody(post.body);
+                                    setEditAttachments(
+                                      listedToDraft(post.attachments)
+                                    );
+                                  }}
+                                >
+                                  Edit
+                                </DropdownMenuItem>
+                              ) : null}
+                              {canDelete ? (
+                                <DropdownMenuItem
+                                  variant="destructive"
+                                  onClick={() =>
+                                    setPendingConfirm({
+                                      kind: "deletePost",
+                                      postId: post._id,
+                                    })
+                                  }
+                                >
+                                  Delete
+                                </DropdownMenuItem>
+                              ) : null}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         ) : null}
                       </div>
                       {isEditingPost ? (
@@ -440,7 +496,7 @@ export function CircleDetail({
                       ) : (
                         <div className="space-y-2">
                           {post.body ? (
-                            <p className="text-sm whitespace-pre-wrap">
+                            <p className="text-sm leading-relaxed whitespace-pre-wrap">
                               <MentionText text={post.body} />
                             </p>
                           ) : null}
@@ -457,67 +513,62 @@ export function CircleDetail({
           )}
         </div>
 
-        <aside className="space-y-4">
+        <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
           <Card className="gap-3 p-4">
             <p className="text-sm font-semibold">Members</p>
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               {members.map((m) => (
                 <li
                   key={m._id}
-                  className="flex flex-col gap-1 rounded-md border border-transparent p-1 text-sm"
+                  className="flex items-center gap-2 rounded-md p-1 text-sm"
                 >
-                  <div className="flex items-center gap-2">
-                    <PersonAvatar
-                      id={m.clerkUserId}
-                      name={m.name}
-                      className="size-6"
-                    />
-                    <span className="min-w-0 flex-1 truncate">{m.name}</span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {m.role}
-                    </span>
-                  </div>
+                  <PersonAvatar
+                    id={m.clerkUserId}
+                    name={m.name}
+                    className="size-6"
+                  />
+                  <span className="min-w-0 flex-1 truncate">{m.name}</span>
+                  <Badge variant="outline" className="capitalize">
+                    {m.role}
+                  </Badge>
                   {isOwner && m.clerkUserId !== userId ? (
-                    <div className="flex gap-1 pl-8">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 px-1.5 text-[10px]"
-                        onClick={() =>
-                          setPendingConfirm({
-                            kind: "transfer",
-                            memberClerkId: m.clerkUserId,
-                            memberName: m.name,
-                          })
-                        }
-                      >
-                        Make owner
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 px-1.5 text-[10px] text-destructive"
-                        onClick={() => {
-                          void (async () => {
-                            try {
-                              await removeMember({
-                                circleId,
-                                memberClerkId: m.clerkUserId,
-                              });
-                              toast.success("Member removed");
-                            } catch (error) {
-                              toast.error(
-                                error instanceof Error
-                                  ? error.message
-                                  : "Could not remove"
-                              );
-                            }
-                          })();
-                        }}
-                      >
-                        Kick
-                      </Button>
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="size-7"
+                          aria-label={`Actions for ${m.name}`}
+                        >
+                          <MoreHorizontal className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuItem
+                          onClick={() =>
+                            setPendingConfirm({
+                              kind: "transfer",
+                              memberClerkId: m.clerkUserId,
+                              memberName: m.name,
+                            })
+                          }
+                        >
+                          Make owner
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() =>
+                            setPendingConfirm({
+                              kind: "kick",
+                              memberClerkId: m.clerkUserId,
+                              memberName: m.name,
+                            })
+                          }
+                        >
+                          Kick
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   ) : null}
                 </li>
               ))}
@@ -525,7 +576,7 @@ export function CircleDetail({
 
             {isOwner ? (
               <form
-                className="space-y-2"
+                className="space-y-2 border-t pt-3"
                 onSubmit={(e) => {
                   e.preventDefault();
                   const username = extractInviteUsername(inviteText);
@@ -556,7 +607,12 @@ export function CircleDetail({
                   placeholder="@username"
                   className="min-h-12"
                 />
-                <Button type="submit" size="sm" variant="outline" className="w-full">
+                <Button
+                  type="submit"
+                  size="sm"
+                  variant="outline"
+                  className="w-full"
+                >
                   Send invite
                 </Button>
               </form>
@@ -571,7 +627,7 @@ export function CircleDetail({
                   {pendingInvites.map((row) => (
                     <li
                       key={row._id}
-                      className="flex items-center justify-between gap-2 text-xs"
+                      className="flex items-center justify-between gap-2 rounded-md border bg-muted/40 px-2 py-1 text-xs"
                     >
                       <span className="truncate">@{row.inviteeUsername}</span>
                       <Button
@@ -601,39 +657,43 @@ export function CircleDetail({
               </div>
             ) : null}
 
-            {circle.myRole === "member" ? (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="w-full text-destructive"
-                onClick={() => {
-                  void (async () => {
-                    try {
-                      await leave({ circleId });
-                      toast.success("Left circle");
-                      router.push("/circles");
-                    } catch (error) {
-                      toast.error(
-                        error instanceof Error
-                          ? error.message
-                          : "Could not leave"
-                      );
-                    }
-                  })();
-                }}
-              >
-                Leave circle
-              </Button>
-            ) : null}
-            {isOwner ? (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="w-full text-destructive"
-                onClick={() => setPendingConfirm({ kind: "delete" })}
-              >
-                Delete circle
-              </Button>
+            {circle.myRole === "member" || isOwner ? (
+              <div className="border-t pt-3">
+                {circle.myRole === "member" ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full text-destructive"
+                    onClick={() => {
+                      void (async () => {
+                        try {
+                          await leave({ circleId });
+                          toast.success("Left circle");
+                          router.push("/circles");
+                        } catch (error) {
+                          toast.error(
+                            error instanceof Error
+                              ? error.message
+                              : "Could not leave"
+                          );
+                        }
+                      })();
+                    }}
+                  >
+                    Leave circle
+                  </Button>
+                ) : null}
+                {isOwner ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full text-destructive"
+                    onClick={() => setPendingConfirm({ kind: "delete" })}
+                  >
+                    Delete circle
+                  </Button>
+                ) : null}
+              </div>
             ) : null}
           </Card>
         </aside>
@@ -647,23 +707,32 @@ export function CircleDetail({
         title={
           pendingConfirm?.kind === "transfer"
             ? `Transfer ownership to ${pendingConfirm.memberName}?`
-            : pendingConfirm?.kind === "deletePost"
-              ? "Delete this post?"
-              : "Delete this circle?"
+            : pendingConfirm?.kind === "kick"
+              ? `Remove ${pendingConfirm.memberName} from this circle?`
+              : pendingConfirm?.kind === "deletePost"
+                ? "Delete this post?"
+                : "Delete this circle?"
         }
         description={
           pendingConfirm?.kind === "transfer"
             ? "You will become a member."
-            : pendingConfirm?.kind === "deletePost"
-              ? "This cannot be undone."
-              : "This removes the circle and all posts."
+            : pendingConfirm?.kind === "kick"
+              ? "They will lose access to this circle."
+              : pendingConfirm?.kind === "deletePost"
+                ? "This cannot be undone."
+                : "This removes the circle and all posts."
         }
         confirmLabel={
-          pendingConfirm?.kind === "transfer" ? "Transfer" : "Delete"
+          pendingConfirm?.kind === "transfer"
+            ? "Transfer"
+            : pendingConfirm?.kind === "kick"
+              ? "Remove"
+              : "Delete"
         }
         variant={
           pendingConfirm?.kind === "delete" ||
-          pendingConfirm?.kind === "deletePost"
+          pendingConfirm?.kind === "deletePost" ||
+          pendingConfirm?.kind === "kick"
             ? "destructive"
             : "default"
         }
@@ -681,6 +750,22 @@ export function CircleDetail({
                 error instanceof Error
                   ? error.message
                   : "Could not transfer"
+              );
+            }
+            return;
+          }
+          if (pendingConfirm.kind === "kick") {
+            try {
+              await removeMember({
+                circleId,
+                memberClerkId: pendingConfirm.memberClerkId,
+              });
+              toast.success("Member removed");
+            } catch (error) {
+              toast.error(
+                error instanceof Error
+                  ? error.message
+                  : "Could not remove"
               );
             }
             return;

@@ -411,6 +411,7 @@ export const barkReportFields = {
   details: v.string(),
   reporterClerkId: v.string(),
   createdAt: v.number(),
+  status: v.optional(v.union(v.literal("open"), v.literal("dismissed"))),
 };
 
 export const caseFollowFields = {
@@ -494,6 +495,7 @@ export const caseReportFields = {
   details: v.string(),
   reporterClerkId: v.string(),
   createdAt: v.number(),
+  status: v.optional(v.union(v.literal("open"), v.literal("dismissed"))),
 };
 
 export const caseStatus = v.union(
@@ -818,6 +820,7 @@ export const storyReportFields = {
   details: v.string(),
   reporterClerkId: v.string(),
   createdAt: v.number(),
+  status: v.optional(v.union(v.literal("open"), v.literal("dismissed"))),
 };
 
 export const storyReadFields = {
@@ -862,7 +865,8 @@ export const contestJudgmentFields = {
 export const messageSubjectKind = v.union(
   v.literal("bark"),
   v.literal("case"),
-  v.literal("creator")
+  v.literal("creator"),
+  v.literal("direct")
 );
 
 export const messageThreadFields = {
@@ -905,6 +909,7 @@ export const messageFields = {
 
 export const moderationEventKind = v.union(
   v.literal("report"),
+  v.literal("report_dismiss"),
   v.literal("creator_approve"),
   v.literal("creator_reject"),
   v.literal("writer_approve"),

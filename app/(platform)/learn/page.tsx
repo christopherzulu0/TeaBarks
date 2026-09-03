@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { LearningHub } from "@/components/learning/learning-hub";
+import {
+  LearningHub,
+  LearningHubSkeleton,
+} from "@/components/learning/learning-hub";
 
 export const metadata: Metadata = {
   title: "Learning Center",
@@ -11,11 +14,7 @@ export const metadata: Metadata = {
 export default function LearnPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 lg:px-6">
-      <Suspense
-        fallback={
-          <div className="h-40 animate-pulse rounded-lg bg-muted" aria-busy />
-        }
-      >
+      <Suspense fallback={<LearningHubSkeleton />}>
         <LearningHub />
       </Suspense>
     </div>

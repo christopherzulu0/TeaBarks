@@ -84,7 +84,7 @@ export function TopNav() {
           <Logo />
         </div>
 
-        <div className="ml-auto flex items-center gap-0.5 sm:ml-2 sm:min-w-0 sm:flex-1 sm:justify-end sm:gap-1.5 md:justify-center">
+        <div className="ml-auto hidden items-center gap-0.5 sm:ml-2 sm:flex sm:min-w-0 sm:flex-1 sm:justify-end sm:gap-1.5 md:justify-center">
           <CommandMenu />
         </div>
 
@@ -106,7 +106,9 @@ export function TopNav() {
               <UnreadCountBadge compact />
             </Link>
           </Button>
-          <ThemeToggle />
+          <div className="hidden sm:block">
+            <ThemeToggle />
+          </div>
           <Show when="signed-out">
             <SignInButton>
               <Button variant="outline" size="sm" className="hidden sm:inline-flex">
