@@ -1,6 +1,7 @@
 import type { Infer } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { internal } from "../_generated/api";
 import { notificationCategory } from "./validators";
 
 type NotificationCategory = Infer<typeof notificationCategory>;
@@ -24,6 +25,7 @@ const PREF_KEY: Record<
   | "evidence"
   | "verification"
   | "message"
+  | "circle"
 > = {
   reply: "reply",
   mention: "mention",
@@ -33,6 +35,7 @@ const PREF_KEY: Record<
   evidence: "evidence",
   verification: "verification",
   message: "message",
+  circle: "circle",
 };
 
 function defaultPrefs(clerkUserId: string) {
@@ -49,6 +52,8 @@ function defaultPrefs(clerkUserId: string) {
     digestWeekly: true,
     digestCaseEmail: true,
     message: true,
+    circle: true,
+    emailEnabled: true,
     unreadCount: 0,
   };
 }
@@ -81,6 +86,8 @@ export function prefsOrDefault(
     digestWeekly: row.digestWeekly,
     digestCaseEmail: row.digestCaseEmail,
     message: row.message ?? true,
+    circle: row.circle ?? true,
+    emailEnabled: row.emailEnabled ?? true,
     unreadCount: row.unreadCount,
   };
 }
@@ -165,6 +172,11 @@ export async function resolveMentionRecipients(
       .withIndex("by_handle", (q) => q.eq("handle", handle))
       .unique();
     if (writer?.applicantClerkId) recipients.add(writer.applicantClerkId);
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_username", (q) => q.eq("username", handle))
+      .unique();
+    if (user?.clerkId) recipients.add(user.clerkId);
   }
   return [...recipients];
 }
@@ -281,12 +293,13 @@ export async function notify(ctx: MutationCtx, input: NotifyInput) {
   if (!enabled) return;
 
   const createdAt = Date.now();
+  const body = input.body.slice(0, 280);
   await ctx.db.insert("notifications", {
     recipientClerkId,
     ...(input.actorClerkId ? { actorClerkId: input.actorClerkId } : {}),
     category: input.category,
     title: input.title,
-    body: input.body.slice(0, 280),
+    body,
     href: input.href,
     read: false,
     createdAt,
@@ -298,6 +311,18 @@ export async function notify(ctx: MutationCtx, input: NotifyInput) {
     await ctx.db.insert("notificationPrefs", {
       ...defaultPrefs(recipientClerkId),
       unreadCount: 1,
+    });
+    prefs = await getPrefsRow(ctx, recipientClerkId);
+  }
+
+  const emailEnabled = prefs?.emailEnabled ?? true;
+  if (emailEnabled) {
+    await ctx.scheduler.runAfter(0, internal.email.sendNotificationEmail, {
+      recipientClerkId,
+      category: input.category,
+      title: input.title,
+      body,
+      href: input.href,
     });
   }
 }

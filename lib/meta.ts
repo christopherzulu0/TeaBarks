@@ -141,6 +141,7 @@ export const notificationCategoryMeta: Record<
   evidence: { label: "Evidence Updates" },
   verification: { label: "Verification" },
   message: { label: "Messages" },
+  circle: { label: "Research Circles" },
 };
 
 export const reportSeverityMeta: Record<

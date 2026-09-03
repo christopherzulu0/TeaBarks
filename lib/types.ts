@@ -47,7 +47,8 @@ export type NotificationCategory =
   | "creator-response"
   | "evidence"
   | "verification"
-  | "message";
+  | "message"
+  | "circle";
 
 export type ReportCategory =
   | "hate-speech"

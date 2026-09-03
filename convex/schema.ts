@@ -41,6 +41,7 @@ import {
   researchCircleFields,
   researchCircleMemberFields,
   researchCirclePostFields,
+  researchCircleInviteFields,
   userFollowFields,
   notificationFields,
   notificationPrefsFields,
@@ -161,6 +162,10 @@ export default defineSchema({
     "by_circle_created",
     ["circleId", "createdAt"]
   ),
+  researchCircleInvites: defineTable(researchCircleInviteFields)
+    .index("by_circle_status", ["circleId", "status"])
+    .index("by_invitee_status", ["inviteeClerkId", "status"])
+    .index("by_circle_invitee", ["circleId", "inviteeClerkId"]),
   cases: defineTable(caseDocFields)
     .index("by_code", ["code"])
     .index("by_status_updatedAt", ["status", "updatedAt"])

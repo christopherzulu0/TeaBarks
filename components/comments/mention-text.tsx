@@ -17,7 +17,7 @@ function MentionSpans({ text }: { text: string }) {
         return (
           <Link
             key={i}
-            href={`/creators/${handle}`}
+            href={`/profile/${handle}`}
             className="font-medium text-primary hover:underline"
           >
             @{handle}

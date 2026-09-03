@@ -22,9 +22,11 @@ const prefsDoc = v.object({
   evidence: v.boolean(),
   verification: v.boolean(),
   message: v.boolean(),
+  circle: v.boolean(),
   soundEnabled: v.boolean(),
   digestWeekly: v.boolean(),
   digestCaseEmail: v.boolean(),
+  emailEnabled: v.boolean(),
   unreadCount: v.number(),
 });
 
@@ -42,9 +44,11 @@ const prefsArgs = {
   evidence: v.boolean(),
   verification: v.boolean(),
   message: v.boolean(),
+  circle: v.boolean(),
   soundEnabled: v.boolean(),
   digestWeekly: v.boolean(),
   digestCaseEmail: v.boolean(),
+  emailEnabled: v.boolean(),
 };
 
 export const listMine = query({
@@ -103,9 +107,11 @@ export const getPrefs = query({
       evidence: prefs.evidence,
       verification: prefs.verification,
       message: prefs.message,
+      circle: prefs.circle,
       soundEnabled: prefs.soundEnabled,
       digestWeekly: prefs.digestWeekly,
       digestCaseEmail: prefs.digestCaseEmail,
+      emailEnabled: prefs.emailEnabled,
       unreadCount: prefs.unreadCount,
     };
   },

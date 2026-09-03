@@ -13,6 +13,7 @@ import {
   Rss,
   ShieldCheck,
   UserPlus,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -43,6 +44,7 @@ const categoryIcons: Record<NotificationCategory, LucideIcon> = {
   evidence: FileStack,
   verification: ShieldCheck,
   message: Mail,
+  circle: Users,
 };
 
 function NotificationsHeader() {

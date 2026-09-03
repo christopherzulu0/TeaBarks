@@ -7,6 +7,7 @@ import {
   MessageCircle,
   ShieldCheck,
   UserPlus,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,7 @@ const icons: Record<NotificationCategory, LucideIcon> = {
   evidence: Bell,
   verification: ShieldCheck,
   message: MessageCircle,
+  circle: Users,
 };
 
 export function WriterNotifications() {

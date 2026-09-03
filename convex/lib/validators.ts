@@ -322,6 +322,33 @@ export const researchCirclePostFields = {
   authorName: v.string(),
   body: v.string(),
   createdAt: v.number(),
+  editedAt: v.optional(v.number()),
+  attachments: v.optional(
+    v.array(
+      v.object({
+        storageId: v.id("_storage"),
+        fileName: v.optional(v.string()),
+        contentType: v.optional(v.string()),
+      })
+    )
+  ),
+};
+
+export const researchCircleInviteStatus = v.union(
+  v.literal("pending"),
+  v.literal("accepted"),
+  v.literal("declined"),
+  v.literal("cancelled")
+);
+
+export const researchCircleInviteFields = {
+  circleId: v.id("researchCircles"),
+  inviterClerkId: v.string(),
+  inviteeClerkId: v.string(),
+  inviteeUsername: v.string(),
+  status: researchCircleInviteStatus,
+  createdAt: v.number(),
+  respondedAt: v.optional(v.number()),
 };
 
 export const barkViewFields = {
@@ -428,7 +455,8 @@ export const notificationCategory = v.union(
   v.literal("creator-response"),
   v.literal("evidence"),
   v.literal("verification"),
-  v.literal("message")
+  v.literal("message"),
+  v.literal("circle")
 );
 
 export const notificationFields = {
@@ -455,6 +483,8 @@ export const notificationPrefsFields = {
   digestWeekly: v.boolean(),
   digestCaseEmail: v.boolean(),
   message: v.optional(v.boolean()),
+  circle: v.optional(v.boolean()),
+  emailEnabled: v.optional(v.boolean()),
   unreadCount: v.number(),
 };
 

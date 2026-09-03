@@ -17,6 +17,8 @@ import type * as contests from "../contests.js";
 import type * as creatorReviews from "../creatorReviews.js";
 import type * as creatorVerifications from "../creatorVerifications.js";
 import type * as creators from "../creators.js";
+import type * as email from "../email.js";
+import type * as emailQueries from "../emailQueries.js";
 import type * as evidenceFiles from "../evidenceFiles.js";
 import type * as follows from "../follows.js";
 import type * as http from "../http.js";
@@ -59,6 +61,8 @@ declare const fullApi: ApiFromModules<{
   creatorReviews: typeof creatorReviews;
   creatorVerifications: typeof creatorVerifications;
   creators: typeof creators;
+  email: typeof email;
+  emailQueries: typeof emailQueries;
   evidenceFiles: typeof evidenceFiles;
   follows: typeof follows;
   http: typeof http;

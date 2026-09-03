@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -114,6 +115,10 @@ export function AdminLearningPanel() {
   const [form, setForm] = React.useState<FormState>(emptyForm);
   const [submitting, setSubmitting] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
+  const [deleteTarget, setDeleteTarget] = React.useState<{
+    id: Id<"learningResources">;
+    title: string;
+  } | null>(null);
 
   const openCreate = () => {
     setEditingId(null);
@@ -367,12 +372,9 @@ export function AdminLearningPanel() {
                   type="button"
                   size="sm"
                   variant="destructive"
-                  onClick={() => {
-                    if (!confirm(`Delete "${row.title}"?`)) return;
-                    void remove({ id: row._id }).then(() =>
-                      toast.success("Deleted")
-                    );
-                  }}
+                  onClick={() =>
+                    setDeleteTarget({ id: row._id, title: row.title })
+                  }
                 >
                   <Trash2 className="size-3.5" aria-hidden />
                 </Button>
@@ -381,6 +383,26 @@ export function AdminLearningPanel() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(next) => {
+          if (!next) setDeleteTarget(null);
+        }}
+        title="Delete this resource?"
+        description={
+          deleteTarget
+            ? `Delete "${deleteTarget.title}"? This cannot be undone.`
+            : undefined
+        }
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          await remove({ id: deleteTarget.id });
+          toast.success("Deleted");
+        }}
+      />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">

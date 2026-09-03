@@ -29,6 +29,7 @@ const descriptions: Record<NotificationCategory, string> = {
   evidence: "When evidence is added or a case you follow changes status.",
   verification: "When your evidence or identity verification status changes.",
   message: "When someone sends you a private message about a reaction, case, or creator.",
+  circle: "When you’re invited to a research circle or someone accepts your invite.",
 };
 
 const categoryPrefKey: Record<
@@ -41,6 +42,7 @@ const categoryPrefKey: Record<
   | "evidence"
   | "verification"
   | "message"
+  | "circle"
 > = {
   reply: "reply",
   mention: "mention",
@@ -50,6 +52,7 @@ const categoryPrefKey: Record<
   evidence: "evidence",
   verification: "verification",
   message: "message",
+  circle: "circle",
 };
 
 type PrefsState = {
@@ -61,7 +64,9 @@ type PrefsState = {
   evidence: boolean;
   verification: boolean;
   message: boolean;
+  circle: boolean;
   soundEnabled: boolean;
+  emailEnabled: boolean;
   digestWeekly: boolean;
   digestCaseEmail: boolean;
 };
@@ -75,7 +80,9 @@ const defaultPrefs: PrefsState = {
   evidence: true,
   verification: true,
   message: true,
+  circle: true,
   soundEnabled: true,
+  emailEnabled: true,
   digestWeekly: true,
   digestCaseEmail: true,
 };
@@ -101,7 +108,9 @@ export function NotificationSettingsForm() {
       evidence: remote.evidence,
       verification: remote.verification,
       message: remote.message,
+      circle: remote.circle ?? true,
       soundEnabled: remote.soundEnabled,
+      emailEnabled: remote.emailEnabled ?? true,
       digestWeekly: remote.digestWeekly,
       digestCaseEmail: remote.digestCaseEmail,
     });
@@ -206,18 +215,33 @@ export function NotificationSettingsForm() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Email digests</CardTitle>
+          <CardTitle>Email</CardTitle>
           <CardDescription>
-            Periodic summaries instead of one email per event. Email delivery
-            is not sent yet — these choices are saved for when it is.
+            Get the same alerts by email. Category switches above also apply to
+            email delivery.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
+              <Label htmlFor="email-enabled">Email notifications</Label>
+              <p className="text-xs text-muted-foreground">
+                Send an email for each in-app notification when this is on.
+              </p>
+            </div>
+            <Switch
+              id="email-enabled"
+              checked={prefs.emailEnabled}
+              onCheckedChange={(checked) => setFlag("emailEnabled", checked)}
+            />
+          </div>
+          <Separator />
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-0.5">
               <Label htmlFor="digest-weekly">Weekly research digest</Label>
               <p className="text-xs text-muted-foreground">
-                Top reactions and case updates in your topics, every Monday.
+                Coming soon — top reactions and case updates every Monday.
+                Preference is saved for when digests ship.
               </p>
             </div>
             <Switch
@@ -229,9 +253,10 @@ export function NotificationSettingsForm() {
           <Separator />
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-              <Label htmlFor="digest-case">Case status emails</Label>
+              <Label htmlFor="digest-case">Case status preference</Label>
               <p className="text-xs text-muted-foreground">
-                Immediate email when a case you opened changes status.
+                Saved for future digest filtering. Case status changes already
+                email when Email notifications and Evidence Updates are on.
               </p>
             </div>
             <Switch
