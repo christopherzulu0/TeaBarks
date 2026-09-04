@@ -28,6 +28,7 @@ export function CountryScopeBar({
         id={id}
         value={value}
         onChange={onChange}
+        includeAll
         className="w-full border-border bg-background sm:w-52"
       />
     </div>

@@ -5,17 +5,17 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { countries } from "@/lib/countries";
+import {
+  COUNTRY_SCOPE_ALL,
+  isValidCountryCode,
+  isValidCountryScope,
+} from "@/lib/country-scope";
 import { defaultUserSettings } from "@/lib/user-settings";
-
-function isValidCountryCode(code: string): boolean {
-  const normalized = code.trim().toUpperCase();
-  return countries.some((country) => country.code === normalized);
-}
 
 export function useSelectedCountry(basePath: "/" | "/explore") {
   const router = useRouter();
   const params = useSearchParams();
-  const { isAuthenticated } = useConvexAuth();
+  const { isAuthenticated, isLoading } = useConvexAuth();
   const settings = useQuery(
     api.userSettings.getMine,
     isAuthenticated ? {} : "skip"
@@ -25,26 +25,33 @@ export function useSelectedCountry(basePath: "/" | "/explore") {
   const settingsCountry = settings?.country?.trim().toUpperCase() ?? "";
 
   const [selectedCountry, setSelectedCountry] = React.useState(
-    defaultUserSettings.country
+    COUNTRY_SCOPE_ALL
   );
   const [isCountryRefreshing, setIsCountryRefreshing] = React.useState(false);
-  const initializedRef = React.useRef(false);
 
   React.useEffect(() => {
-    if (urlCountry && isValidCountryCode(urlCountry)) {
+    if (urlCountry && isValidCountryScope(urlCountry)) {
       setSelectedCountry(urlCountry);
-      initializedRef.current = true;
       return;
     }
-    if (
-      !initializedRef.current &&
-      settingsCountry &&
-      isValidCountryCode(settingsCountry)
-    ) {
-      setSelectedCountry(settingsCountry);
-      initializedRef.current = true;
+    if (isLoading) return;
+    if (isAuthenticated) {
+      if (settings === undefined) return;
+      setSelectedCountry(
+        settingsCountry && isValidCountryCode(settingsCountry)
+          ? settingsCountry
+          : defaultUserSettings.country
+      );
+      return;
     }
-  }, [urlCountry, settingsCountry]);
+    setSelectedCountry(COUNTRY_SCOPE_ALL);
+  }, [
+    urlCountry,
+    settingsCountry,
+    isAuthenticated,
+    isLoading,
+    settings,
+  ]);
 
   React.useEffect(() => {
     if (!isCountryRefreshing) return;
@@ -54,7 +61,7 @@ export function useSelectedCountry(basePath: "/" | "/explore") {
 
   const handleCountryChange = (code: string) => {
     const normalized = code.trim().toUpperCase();
-    if (!isValidCountryCode(normalized)) return;
+    if (!isValidCountryScope(normalized)) return;
     if (normalized === selectedCountry) return;
     setIsCountryRefreshing(true);
     setSelectedCountry(normalized);
@@ -68,7 +75,9 @@ export function useSelectedCountry(basePath: "/" | "/explore") {
   const countryMeta = countries.find((c) => c.code === selectedCountry);
   const countryLabel = countryMeta
     ? `${countryMeta.flag} ${countryMeta.name}`
-    : selectedCountry;
+    : selectedCountry === COUNTRY_SCOPE_ALL
+      ? "All countries"
+      : selectedCountry;
 
   return {
     selectedCountry,

@@ -21,6 +21,7 @@ import {
 import { api } from "@/convex/_generated/api";
 import { useSelectedCountry } from "@/hooks/use-selected-country";
 import { toUiBark, sortBarksByPublishedAt } from "@/lib/barks/query";
+import { isCountryScopeAll } from "@/lib/country-scope";
 import { topics as topicCatalog } from "@/lib/topics";
 import {
   sourcesUnderDiscussion,
@@ -108,6 +109,13 @@ export function HomePageContent({
     .slice(0, 5);
   const localFeed = byCountry.slice(0, 4);
   const globalFeed = worldwide.slice(0, 4);
+  const scopeIsAll = isCountryScopeAll(selectedCountry);
+  const scopePlace = scopeIsAll
+    ? "worldwide"
+    : (countryMeta?.name ?? "this country");
+  const scopeFrom = scopeIsAll
+    ? "anywhere"
+    : (countryMeta?.name ?? "your selected country");
 
   return (
     <div className="min-w-0 flex-1 space-y-10 px-4 py-8 lg:px-6">
@@ -132,8 +140,8 @@ export function HomePageContent({
                 <div className="sm:col-span-2 xl:col-span-3">
                   <EmptyState
                     icon={FileText}
-                    title={`No sources in ${countryMeta?.name ?? "this country"} yet`}
-                    description={`When reactions from ${countryMeta?.name ?? "your selected country"} are published, the sources drawing the most analysis will show up here.`}
+                    title={`No sources in ${scopePlace} yet`}
+                    description={`When reactions from ${scopeFrom} are published, the sources drawing the most analysis will show up here.`}
                   />
                 </div>
               ) : (
@@ -163,8 +171,8 @@ export function HomePageContent({
               {trendingBarks.length === 0 ? (
                 <EmptyState
                   icon={MessageSquare}
-                  title={`No trending reactions in ${countryMeta?.name ?? "this country"}`}
-                  description={`When reactions from ${countryMeta?.name ?? "your selected country"} are published, the most upvoted will appear here.`}
+                  title={`No trending reactions ${scopeIsAll ? "yet" : `in ${scopePlace}`}`}
+                  description={`When reactions from ${scopeFrom} are published, the most upvoted will appear here.`}
                 />
               ) : (
                 trendingBarks.map((b) => <BarkCard key={b.id} bark={b} />)
@@ -192,8 +200,12 @@ export function HomePageContent({
                 {localFeed.length === 0 ? (
                   <EmptyState
                     icon={MessageSquare}
-                    title={`No reactions in ${countryMeta?.name ?? "this country"} yet`}
-                    description={`Reactions from ${countryMeta?.name ?? "your selected country"} will show up here when they include a location.`}
+                    title={`No reactions ${scopeIsAll ? "yet" : `in ${scopePlace} yet`}`}
+                    description={
+                      scopeIsAll
+                        ? "Published reactions will show up here."
+                        : `Reactions from ${scopeFrom} will show up here when they include a location.`
+                    }
                   />
                 ) : (
                   localFeed.map((b) => <BarkCard key={b.id} bark={b} />)

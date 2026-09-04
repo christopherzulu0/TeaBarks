@@ -5,6 +5,7 @@ import { useQuery } from "convex/react";
 import { BarkCard } from "@/components/bark-card";
 import { EmptyState } from "@/components/empty-state";
 import { api } from "@/convex/_generated/api";
+import { isCountryScopeAll } from "@/lib/country-scope";
 import { barksForCountry } from "@/lib/sources/under-discussion";
 import { sortBarksByViews, toUiBark } from "@/lib/barks/query";
 import type { Bark } from "@/lib/types";
@@ -22,13 +23,22 @@ export function ExploreBarks({
   const data = docs ? docs.map(toUiBark) : initialBarks;
   const filtered = barksForCountry(data, selectedCountry);
   const trending = sortBarksByViews(filtered);
+  const worldwide = isCountryScopeAll(selectedCountry);
 
   if (trending.length === 0) {
     return (
       <EmptyState
         icon={MessageSquare}
-        title={`No reactions in ${countryName ?? "this country"} yet`}
-        description={`When reactions from ${countryName ?? "your selected country"} are published, they will show up here.`}
+        title={
+          worldwide
+            ? "No reactions yet"
+            : `No reactions in ${countryName ?? "this country"} yet`
+        }
+        description={
+          worldwide
+            ? "When reactions are published, they will show up here."
+            : `When reactions from ${countryName ?? "your selected country"} are published, they will show up here.`
+        }
       />
     );
   }

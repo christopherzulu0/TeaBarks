@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/empty-state";
 import { HomeSourceCard } from "@/components/home/home-source-card";
 import { api } from "@/convex/_generated/api";
 import { toUiBark } from "@/lib/barks/query";
+import { isCountryScopeAll } from "@/lib/country-scope";
 import {
   sourcesUnderDiscussion,
   underDiscussionContext,
@@ -42,13 +43,22 @@ export function ExploreSources({
     publicSources,
     selectedCountry
   );
+  const worldwide = isCountryScopeAll(selectedCountry);
 
   if (sources.length === 0) {
     return (
       <EmptyState
         icon={FileText}
-        title={`No sources in ${countryName ?? "this country"} yet`}
-        description={`When reactions from ${countryName ?? "your selected country"} are published, the sources drawing the most analysis in ${countryLabel} will show up here.`}
+        title={
+          worldwide
+            ? "No sources yet"
+            : `No sources in ${countryName ?? "this country"} yet`
+        }
+        description={
+          worldwide
+            ? "When reactions are published, the sources drawing the most analysis will show up here."
+            : `When reactions from ${countryName ?? "your selected country"} are published, the sources drawing the most analysis in ${countryLabel} will show up here.`
+        }
       />
     );
   }

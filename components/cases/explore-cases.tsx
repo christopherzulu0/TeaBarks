@@ -5,8 +5,8 @@ import { useQuery } from "convex/react";
 import { CaseCard } from "@/components/case-card";
 import { EmptyState } from "@/components/empty-state";
 import { api } from "@/convex/_generated/api";
+import { isCountryScopeAll } from "@/lib/country-scope";
 import { toUiCase } from "@/lib/cases/query";
-import type { AccountabilityCase } from "@/lib/types";
 
 export function ExploreCases({
   selectedCountry,
@@ -15,7 +15,13 @@ export function ExploreCases({
   selectedCountry: string;
   countryName?: string;
 }) {
-  const docs = useQuery(api.cases.listByCountry, { country: selectedCountry });
+  const worldwide = isCountryScopeAll(selectedCountry);
+  const byCountry = useQuery(
+    api.cases.listByCountry,
+    worldwide ? "skip" : { country: selectedCountry }
+  );
+  const allCases = useQuery(api.cases.list, worldwide ? {} : "skip");
+  const docs = worldwide ? allCases : byCountry;
   const data = docs ? docs.map(toUiCase) : null;
 
   if (data === null) {
@@ -32,8 +38,16 @@ export function ExploreCases({
     return (
       <EmptyState
         icon={Scale}
-        title={`No cases in ${countryName ?? "this country"} yet`}
-        description={`When accountability cases are opened from ${countryName ?? "your selected country"}, they will show up here.`}
+        title={
+          worldwide
+            ? "No cases yet"
+            : `No cases in ${countryName ?? "this country"} yet`
+        }
+        description={
+          worldwide
+            ? "When accountability cases are opened, they will show up here."
+            : `When accountability cases are opened from ${countryName ?? "your selected country"}, they will show up here.`
+        }
       />
     );
   }
